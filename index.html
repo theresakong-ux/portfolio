@@ -84,7 +84,7 @@ body{
 /* ---- ambient aurora wallpaper ---- */
 #aurora{position:fixed;inset:-12%;z-index:0;overflow:hidden;pointer-events:none;
   transition:transform .5s var(--ease)}
-.blob{position:absolute;width:50vw;height:50vw;border-radius:50%;filter:blur(70px);opacity:.22;will-change:transform}
+.blob{position:absolute;width:50vw;height:50vw;border-radius:50%;filter:blur(70px);opacity:.12;will-change:transform}
 .blob.b1{background:radial-gradient(circle at 50% 50%,var(--au-1),transparent 66%);left:-8%;top:-12%;animation:drift1 36s var(--ease) infinite alternate}
 .blob.b2{background:radial-gradient(circle at 50% 50%,var(--au-2),transparent 66%);right:-10%;top:-6%;animation:drift2 44s var(--ease) infinite alternate}
 .blob.b3{background:radial-gradient(circle at 50% 50%,var(--au-3),transparent 66%);left:6%;bottom:-18%;animation:drift3 40s var(--ease) infinite alternate}
@@ -94,19 +94,8 @@ body{
 @keyframes drift3{to{transform:translate(10vw,-8vh) scale(1.2)}}
 @keyframes drift4{to{transform:translate(-9vw,-6vh) scale(1.14)}}
 
-/* faint grid + vignette texture over the aurora */
-#desk{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(var(--grid) 1px,transparent 1px),
-    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:36px 36px;
-}
-#desk::after{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(130% 100% at 50% -10%,transparent 52%,color-mix(in oklab,var(--wall-2) 60%,transparent));
-  pointer-events:none;
-}
+/* desktop overlay removed — let the background photo show through cleanly */
+#desk{display:none}
 @media (prefers-reduced-motion: reduce){
   .blob{animation:none}
   #aurora{transition:none}
@@ -119,17 +108,17 @@ body{
   padding:0 20px;
   pointer-events:none;
   isolation:isolate;
-  background:color-mix(in oklab,var(--panel) 13%,transparent);
-  backdrop-filter:blur(32px) saturate(220%) brightness(1.04);
-  -webkit-backdrop-filter:blur(32px) saturate(220%) brightness(1.04);
+  background:transparent;
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
   box-shadow:
-    inset 0 -1px 0 var(--glass-brd),
-    0 2px 24px -6px var(--glass-shadow);
-  border-radius:0 0 14px 14px;
+    inset 0 -1px 0 color-mix(in oklab,var(--glass-brd) 50%,transparent),
+    0 2px 24px -10px var(--glass-shadow);
+  border-radius:0;
 }
 /* top sheen from the screen frame */
 .menubar::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:linear-gradient(180deg,color-mix(in oklab,#fff 22%,transparent),transparent 55%)}
+  background:linear-gradient(180deg,color-mix(in oklab,#fff 8%,transparent),transparent 55%)}
 /* subtle bottom-edge glow */
 .menubar::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
   box-shadow:inset 0 1px 0 color-mix(in oklab,#fff 55%,transparent)}
@@ -138,11 +127,10 @@ body{
   color:var(--menu-ink);
 }
 .mb-left{font-size:13px}
-.mb-mark{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.01em;white-space:nowrap}
-.mb-mark .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 22%,transparent)}
+.mb-mark{display:flex;align-items:center;font-weight:500;font-size:14px;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--accent);white-space:nowrap}
 .mb-sep{width:1px;height:16px;background:var(--edge);opacity:.7;flex:0 0 auto}
-.mb-status{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
+.mb-status{font-size:12px;letter-spacing:.01em;color:var(--ink-soft);white-space:nowrap}
 .mb-right{gap:7px}
 .mb-link{
   display:flex;align-items:center;justify-content:center;
@@ -192,8 +180,8 @@ body{
 .icon.sel .label{background:color-mix(in oklab,var(--accent) 90%,transparent);color:var(--on-accent);text-shadow:none}
 
 /* ---- squircle desktop icons (folders + single apps) ---- */
-.folder,.single{width:158px;gap:14px}
-.folder .art,.single .art{width:134px;height:134px;position:relative;transform:none;
+.folder,.single{width:138px;gap:12px}
+.folder .art,.single .art{width:116px;height:116px;position:relative;transform:none;
   transform-style:flat;transition:transform .2s var(--snap)}
 .folder .label,.single .label{
   font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--ink);
@@ -557,9 +545,9 @@ body{
 <!-- ===== liquid glass menu bar ===== -->
 <div class="menubar">
   <div class="mb-pill mb-left">
-    <span class="mb-mark"><span class="dot"></span>Theresa Kong</span>
+    <span class="mb-mark">Theresa Kong</span>
     <span class="mb-sep"></span>
-    <span class="mb-status mono">Product Designer · Curious by default</span>
+    <span class="mb-status mono">Senior Product Designer</span>
   </div>
   <div class="mb-pill mb-right">
     <a class="mb-link" href="https://www.linkedin.com/in/theresa-kong/" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn">
@@ -594,7 +582,7 @@ body{
   </div>
 
   <!-- folders -->
-  <div class="icon folder" id="ic-work" data-open="work" data-screen-label="Work" style="left:548px;top:120px">
+  <div class="icon folder" id="ic-work" data-open="work" data-screen-label="Work" style="left:1100px;top:72px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#c9d8ec,#9fbbdd)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f1bca9,#dd8e76)"><i class="ph"></i></span>
@@ -604,7 +592,7 @@ body{
     <div class="count">5 items</div>
   </div>
 
-  <div class="icon folder" id="ic-photo" data-open="photo" data-screen-label="Photography" style="left:734px;top:120px">
+  <div class="icon folder" id="ic-photo" data-open="photo" data-screen-label="Photography" style="left:1270px;top:72px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#d0d4dc,#9aa1ad)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#e9cdae,#c59b71)"><i class="ph"></i></span>
@@ -614,7 +602,7 @@ body{
     <div class="count">12 items</div>
   </div>
 
-  <div class="icon folder" id="ic-dotb" data-open="dotb" data-screen-label="Do Outside the Box" style="left:920px;top:120px">
+  <div class="icon folder" id="ic-dotb" data-open="dotb" data-screen-label="Do Outside the Box" style="left:1100px;top:236px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#bfe3c9,#8cc89e)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f6d79a,#e9aa4d)"><i class="ph"></i></span>
@@ -631,7 +619,7 @@ body{
     <div class="count">Theresa Kong</div>
   </div>
 
-  <div class="icon single" id="ic-gb" data-open="guestbook" data-screen-label="Guest Book" style="left:548px;top:382px">
+  <div class="icon single" id="ic-gb" data-open="guestbook" data-screen-label="Guest Book" style="left:1270px;top:236px">
     <div class="art"><span class="scard guest">
       <svg viewBox="0 0 60 60" width="56" height="56" fill="none">
         <path d="M15 12.5C15 11 16.2 10 17.6 10H43.4C44.8 10 46 11 46 12.5V47.5C46 49 44.8 50 43.4 50H17.6C16.2 50 15 49 15 47.5Z" stroke="#fff" stroke-width="3"/>
@@ -643,7 +631,7 @@ body{
     <div class="count accent">Leave your color</div>
   </div>
 
-  <div class="icon single" id="ic-res" data-open="resume" data-screen-label="Résumé" style="left:734px;top:382px">
+  <div class="icon single" id="ic-res" data-open="resume" data-screen-label="Résumé" style="left:1185px;top:400px">
     <div class="art"><span class="scard paper">
       <svg viewBox="0 0 60 60" width="54" height="54" fill="none">
         <path d="M18 9H35L45 19V49C45 50.7 43.7 52 42 52H18C16.3 52 15 50.7 15 49V12C15 10.3 16.3 9 18 9Z" stroke="#c0564f" stroke-width="3"/>

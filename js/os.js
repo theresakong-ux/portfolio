@@ -23,14 +23,14 @@
   tick(); setInterval(tick, 10000);
 
   /* ---------- icon positions (persist) ---------- */
-  const POS = LS.get('tk.iconpos.v2', {});
+  const POS = LS.get('tk.iconpos.v3', {});
   $$('.icon').forEach(ic => {
     const p = POS[ic.id];
     if (p) { ic.style.left = p.x + 'px'; ic.style.top = p.y + 'px'; }
   });
   function saveIconPos(ic) {
     POS[ic.id] = { x: parseFloat(ic.style.left), y: parseFloat(ic.style.top) };
-    LS.set('tk.iconpos.v2', POS);
+    LS.set('tk.iconpos.v3', POS);
   }
 
   /* ---------- z-order ---------- */
@@ -69,7 +69,7 @@
       if (!dragging) return;
       dragging = false;
       try { handle.releasePointerCapture(e.pointerId); } catch {}
-      onEnd && onEnd(moved);
+      onEnd && onEnd(moved, e.type);
     };
     handle.addEventListener('pointerup', up);
     handle.addEventListener('pointercancel', up);
@@ -84,20 +84,23 @@
   });
 
   $$('.icon').forEach(ic => {
-    let moved = false;
+    // keep newly-defaulted positions on-screen for narrower viewports
+    const b0 = iconBounds(ic);
+    ic.style.left = clamp(parseFloat(ic.style.left) || 0, b0.minX, b0.maxX) + 'px';
+    ic.style.top = clamp(parseFloat(ic.style.top) || 0, b0.minY, b0.maxY) + 'px';
+
+    const openable = !ic.hasAttribute('data-noopen');
     makeDraggable(ic, ic, {
       bounds: iconBounds,
-      onStart: () => { bump(ic); moved = false; ic.style.transition = 'none'; },
-      onMove: () => { moved = true; },
-      onEnd: (m) => { ic.style.transition = ''; if (m) saveIconPos(ic); }
-    });
-    if (ic.hasAttribute('data-noopen')) return;
-    ic.addEventListener('click', e => {
-      if (moved) { moved = false; return; }
-      // let the author set/replace a cover by clicking an empty, editable slot
-      const slot = e.target.closest && e.target.closest('image-slot');
-      if (slot && slot.hasAttribute('data-editable') && !slot.hasAttribute('data-filled')) return;
-      handleOpen(ic);
+      onStart: () => { bump(ic); ic.style.transition = 'none'; },
+      onEnd: (moved, type) => {
+        ic.style.transition = '';
+        if (moved) { saveIconPos(ic); return; }
+        // a clean tap (no real drag, not a cancel) opens the icon's window.
+        // Driven off pointerup rather than a synthesized click — pointer
+        // capture during drag makes the click event unreliable.
+        if (openable && type !== 'pointercancel') handleOpen(ic);
+      }
     });
   });
 
