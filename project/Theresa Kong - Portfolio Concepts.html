@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theresa Kong — Portfolio Concepts</title>
+<style>
+  html,body{margin:0;height:100%;background:#f0eee9}
+  iframe.concept{width:100%;height:100%;border:0;display:block;background:#f4f1e9}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// Lazy-mount the iframe only when its artboard scrolls near the viewport,
+// so three full interactive pages don't all boot at once. Once loaded it
+// stays loaded (interactions/physics keep their state).
+function Concept({ src }){
+  return (
+    <iframe className="concept" src={src} title={src} scrolling="no"></iframe>
+  );
+}
+
+function App(){
+  return (
+    <DesignCanvas>
+      <DCSection id="landing" title="Theresa Kong — Portfolio Landing"
+        subtitle="Three interactive directions · one shared system (paper · #454545 ink · #D35555 highlight · Hanken Grotesk + mono) · open one fullscreen ⤢ to play with it, then tell me which to build out">
+        <DCArtboard id="instrument" label="A · The Instrument — a control surface you play" width={1440} height={1000}>
+          <Concept src="concepts/instrument.html" />
+        </DCArtboard>
+        <DCArtboard id="magnetic" label="B · Magnetic Field — work & verbs react to your cursor" width={1440} height={1000}>
+          <Concept src="concepts/magnetic.html" />
+        </DCArtboard>
+        <DCArtboard id="kinetic" label="C · Kinetic Index — type bends to your cursor; work blooms on hover" width={1440} height={1000}>
+          <Concept src="concepts/kinetic.html" />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

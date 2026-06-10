@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theresa Kong — The Instrument</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f1e9;
+    --paper-2:#efe9dd;
+    --ink:#454545;
+    --ink-60:#8a8782;
+    --ink-30:#bdbab3;
+    --accent:#d35555;
+    --line:rgba(69,69,69,.14);
+    --sans:'Hanken Grotesk',system-ui,sans-serif;
+    --mono:'Spline Sans Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1440px;height:1000px;overflow:hidden}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+    cursor:none;
+  }
+  /* dotted field + cursor spotlight */
+  #field{position:absolute;inset:0;z-index:0;pointer-events:none}
+  #spot{
+    position:absolute;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle, rgba(211,85,85,.10), rgba(211,85,85,0) 62%);
+    transform:translate(-50%,-50%);left:50%;top:42%;z-index:0;pointer-events:none;
+    transition:opacity .4s;mix-blend-mode:multiply;
+  }
+  #cursor{
+    position:fixed;z-index:50;width:14px;height:14px;border:1.5px solid var(--ink);
+    border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;
+    transition:width .18s,height .18s,background .18s,border-color .18s;
+    mix-blend-mode:normal;
+  }
+  #cursor.hot{width:34px;height:34px;background:rgba(211,85,85,.12);border-color:var(--accent)}
+
+  .stage{position:relative;z-index:1;width:100%;height:100%;
+    padding:34px 64px 40px;display:flex;flex-direction:column}
+
+  /* top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--ink-60);
+    text-transform:uppercase}
+  .topbar .brand{display:flex;align-items:center;gap:10px;color:var(--ink)}
+  .topbar .brand b{font-weight:600;letter-spacing:.02em}
+  .star{width:13px;height:13px;color:var(--accent)}
+  .topbar .meta{display:flex;gap:26px;align-items:center}
+  .topbar .meta span{display:flex;gap:7px;align-items:center}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 3px rgba(211,85,85,.18);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* hero grid */
+  .hero{flex:1;display:grid;grid-template-columns:1fr 466px;gap:48px;
+    align-items:center;padding-top:8px}
+
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-60);margin-bottom:26px;
+    display:flex;align-items:center;gap:14px}
+  .eyebrow::before{content:"";width:42px;height:1px;background:var(--ink-30)}
+
+  h1{font-size:84px;line-height:.95;letter-spacing:-.035em;font-weight:600;
+    text-wrap:balance}
+  h1 .verb{color:var(--accent);position:relative;font-style:italic;font-weight:600;
+    transition:opacity .25s}
+  .lede{margin-top:30px;max-width:480px;font-size:20px;line-height:1.5;
+    color:#5d5a55;font-weight:380;min-height:90px}
+  .lede b{color:var(--ink);font-weight:600}
+
+  .modes{margin-top:34px;display:flex;gap:10px}
+  .mode{font-family:var(--mono);font-size:13px;letter-spacing:.02em;
+    padding:11px 18px 10px;border:1px solid var(--line);border-radius:40px;
+    background:transparent;color:var(--ink);cursor:none;text-transform:uppercase;
+    transition:all .2s;display:flex;align-items:center;gap:9px;font-weight:500}
+  .mode .led{width:7px;height:7px;border-radius:50%;background:var(--ink-30);transition:all .2s}
+  .mode:hover{border-color:var(--ink-30)}
+  .mode.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .mode.on .led{background:var(--accent);box-shadow:0 0 0 3px rgba(211,85,85,.35)}
+
+  /* console */
+  .console{background:linear-gradient(180deg,#fbf9f4,#f1ebe0);
+    border:1px solid var(--line);border-radius:22px;padding:26px;
+    box-shadow:0 1px 0 #fff inset, 0 24px 60px -28px rgba(69,69,69,.5);
+    position:relative;overflow:hidden}
+  .console::after{content:"";position:absolute;inset:0;border-radius:22px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.5) inset;pointer-events:none}
+  .console-head{display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-60);
+    text-transform:uppercase;margin-bottom:18px}
+  .screws{display:flex;gap:8px}
+  .screws i{width:7px;height:7px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#cfc8b9);display:block}
+
+  /* readout */
+  .readout{background:#2c2b29;border-radius:12px;padding:16px 18px;
+    font-family:var(--mono);color:#e7d9c4;position:relative;overflow:hidden;
+    box-shadow:0 2px 8px rgba(0,0,0,.25) inset}
+  .readout::before{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px);
+    pointer-events:none}
+  .ro-row{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12px;letter-spacing:.06em}
+  .ro-row + .ro-row{margin-top:9px}
+  .ro-row .k{color:#8f8a7e;text-transform:uppercase}
+  .ro-row .v{color:#e9b3a0;font-weight:500}
+  .ro-big{font-size:30px;letter-spacing:.02em;color:#f0e6d6;margin:6px 0 12px;
+    display:flex;align-items:baseline;gap:8px}
+  .ro-big small{font-size:12px;color:#8f8a7e}
+  .bars{display:flex;gap:4px;align-items:flex-end;height:26px;margin-top:6px}
+  .bars i{width:5px;background:#d35555;border-radius:2px;opacity:.85;display:block;
+    transition:height .2s}
+
+  /* controls */
+  .controls{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;
+    margin-top:22px}
+  .knob-wrap{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .knob{width:92px;height:92px;border-radius:50%;cursor:none;position:relative;
+    background:radial-gradient(circle at 38% 32%,#fcfaf5,#e4ddcf);
+    box-shadow:0 6px 14px -4px rgba(69,69,69,.45),0 0 0 1px rgba(255,255,255,.6) inset,
+      0 -3px 8px rgba(255,255,255,.7) inset;touch-action:none}
+  .knob::after{content:"";position:absolute;inset:13px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#fff,#efe9dc);
+    box-shadow:0 1px 3px rgba(69,69,69,.2)}
+  .knob .pointer{position:absolute;left:50%;top:9px;width:4px;height:24px;
+    background:var(--accent);border-radius:2px;transform-origin:50% 37px;
+    transform:translateX(-50%) rotate(0deg);z-index:2}
+  .knob .ticks{position:absolute;inset:-7px;border-radius:50%}
+  .knob .ticks i{position:absolute;left:50%;top:0;width:2px;height:6px;
+    background:var(--ink-30);transform-origin:50% 53px}
+  .ctl-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-60)}
+
+  .sliders{display:flex;flex-direction:column;gap:18px}
+  .slider{}
+  .slider .sl-top{display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-60);margin-bottom:9px}
+  .slider .sl-top .num{color:var(--accent);font-weight:500}
+  .track{height:8px;border-radius:6px;background:#e4ddcf;position:relative;cursor:none;
+    box-shadow:0 1px 2px rgba(69,69,69,.18) inset}
+  .track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;
+    background:linear-gradient(90deg,#d35555,#e08a72)}
+  .track .thumb{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;
+    background:#fbf9f4;transform:translate(-50%,-50%);
+    box-shadow:0 2px 6px rgba(69,69,69,.4),0 0 0 1px rgba(255,255,255,.7) inset}
+
+  /* lower band */
+  .lower{display:grid;grid-template-columns:1.4fr 1fr;gap:56px;
+    padding-top:30px;margin-top:18px;border-top:1px solid var(--line)}
+  .band-label{font-family:var(--mono);font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-60);margin-bottom:18px;
+    display:flex;justify-content:space-between}
+  .work{display:flex;flex-direction:column;gap:2px}
+  .wrow{display:grid;grid-template-columns:30px 1fr auto;gap:18px;align-items:center;
+    padding:14px 12px;border-radius:12px;cursor:none;transition:background .2s;
+    position:relative}
+  .wrow:hover{background:var(--paper-2)}
+  .wrow .idx{font-family:var(--mono);font-size:12px;color:var(--ink-30)}
+  .wrow .wmain .t{font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .wrow .wmain .s{font-size:13.5px;color:#6f6c66;margin-top:2px}
+  .wrow .metric{font-family:var(--mono);font-size:12px;color:var(--accent);
+    text-align:right;white-space:nowrap;opacity:0;transform:translateX(-6px);
+    transition:.25s}
+  .wrow:hover .metric{opacity:1;transform:none}
+  .wrow .arrow{position:absolute;right:14px;opacity:0}
+
+  .timeline{display:flex;flex-direction:column;gap:0}
+  .trow{display:grid;grid-template-columns:1fr auto;gap:10px;padding:13px 0;
+    border-bottom:1px solid var(--line);align-items:baseline}
+  .trow:last-child{border-bottom:0}
+  .trow .role{font-size:15.5px;font-weight:600}
+  .trow .co{font-size:13px;color:#6f6c66}
+  .trow .yr{font-family:var(--mono);font-size:12px;color:var(--ink-60);white-space:nowrap}
+</style>
+</head>
+<body>
+  <canvas id="field"></canvas>
+  <div id="spot"></div>
+  <div id="cursor"></div>
+
+  <div class="stage">
+    <div class="topbar">
+      <div class="brand">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6 5.4 10.8 11.4 11.4v1.2C17.4 13.2 12.6 18 12 24h-1.2C10.2 18 5.4 13.2-.6 12.6v-1.2C5.4 10.8 10.2 6 10.8 0H12z"/></svg>
+        <b>THERESA KONG</b><span style="color:var(--ink-30)">/</span>SR. PRODUCT DESIGNER
+      </div>
+      <div class="meta">
+        <span><i class="dot"></i> OPEN TO SENIOR / STAFF ROLES</span>
+        <span>NEW YORK, NY</span>
+        <span id="clock">—</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-left">
+        <div class="eyebrow">Design, as an instrument</div>
+        <h1>Don't just<br>ship screens.<br><span class="verb" id="verb">Experiment.</span></h1>
+        <p class="lede" id="lede"><b>Senior product designer</b> tuning tangled, multi-sided systems into products people use without thinking. Reach over — turn a dial, flip a switch, see intent become outcome.</p>
+        <div class="modes" id="modes">
+          <button class="mode on" data-mode="0"><span class="led"></span>Experiment</button>
+          <button class="mode" data-mode="1"><span class="led"></span>Explore</button>
+          <button class="mode" data-mode="2"><span class="led"></span>Experience</button>
+        </div>
+      </div>
+
+      <div class="console">
+        <div class="console-head">
+          <span>CONSOLE — TK·01</span>
+          <span class="screws"><i></i><i></i></span>
+        </div>
+        <div class="readout">
+          <div class="ro-row"><span class="k">Mode</span><span class="v" id="ro-mode">EXPERIMENT</span></div>
+          <div class="ro-big"><span id="ro-precision">72</span><small>/ 100 precision</small></div>
+          <div class="bars" id="bars"></div>
+          <div class="ro-row" style="margin-top:14px"><span class="k">Signal</span><span class="v" id="ro-density">balanced</span></div>
+        </div>
+
+        <div class="controls">
+          <div class="knob-wrap">
+            <div class="knob" id="knob">
+              <div class="ticks" id="ticks"></div>
+              <div class="pointer" id="pointer"></div>
+            </div>
+            <div class="ctl-label">Precision</div>
+          </div>
+          <div class="sliders">
+            <div class="slider">
+              <div class="sl-top"><span>Density</span><span class="num" id="d-num">58</span></div>
+              <div class="track" id="track-d"><div class="fill" id="fill-d"></div><div class="thumb" id="thumb-d"></div></div>
+            </div>
+            <div class="slider">
+              <div class="sl-top"><span>Tempo</span><span class="num" id="t-num">40</span></div>
+              <div class="track" id="track-t"><div class="fill" id="fill-t"></div><div class="thumb" id="thumb-t"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lower">
+      <div>
+        <div class="band-label"><span>Selected work</span><span>03 — placeholders</span></div>
+        <div class="work" id="work">
+          <div class="wrow"><span class="idx">01</span><div class="wmain"><div class="t">Self-Launch — autonomous marketplace</div><div class="s">TourHero · AI-assisted customization, 3-sided platform</div></div><div class="metric">29-day → same-day publish</div></div>
+          <div class="wrow"><span class="idx">02</span><div class="wmain"><div class="t">0 → 1 consumer journey + readiness portal</div><div class="s">TourHero · founding designer</div></div><div class="metric">−25 hrs/wk overhead</div></div>
+          <div class="wrow"><span class="idx">03</span><div class="wmain"><div class="t">Grocery taxonomy & multi-SKU nav</div><div class="s">Errunds · 3 MVPs, mobile + web</div></div><div class="metric">100% task success</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="band-label"><span>Trajectory</span><span>2020 →</span></div>
+        <div class="timeline">
+          <div class="trow"><div><div class="role">Senior Product Designer</div><div class="co">TourHero</div></div><div class="yr">SEP 25 — MAR 26</div></div>
+          <div class="trow"><div><div class="role">Product Designer</div><div class="co">TourHero</div></div><div class="yr">SEP 21 — SEP 25</div></div>
+          <div class="trow"><div><div class="role">UX / UI Designer</div><div class="co">Errunds</div></div><div class="yr">JAN 20 — AUG 21</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const verbs = ["Experiment.","Explore.","Experience."];
+  const ledes = [
+    '<b>Senior product designer</b> tuning tangled, multi-sided systems into products people use without thinking. Reach over — turn a dial, flip a switch, see intent become outcome.',
+    '<b>Systems thinker</b> who maps the whole machine before drawing a single screen — then finds the one move that makes the rest fall into place.',
+    '<b>0 → 1 to scale.</b> I design the calm, obvious surface that hides a precise, deliberate engine underneath. Come experience the difference intent makes.'
+  ];
+  const roMode = ["EXPERIMENT","EXPLORE","EXPERIENCE"];
+
+  // ---- cursor ----
+  const cursor = document.getElementById('cursor');
+  let mx = 720, my = 420, cx = 720, cy = 420;
+  const spot = document.getElementById('spot');
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY;
+    spot.style.left=mx+'px'; spot.style.top=my+'px'; });
+  document.querySelectorAll('button,.knob,.track,.wrow').forEach(el=>{
+    el.addEventListener('mouseenter',()=>cursor.classList.add('hot'));
+    el.addEventListener('mouseleave',()=>cursor.classList.remove('hot'));
+  });
+  function rafCursor(){ cx+=(mx-cx)*.28; cy+=(my-cy)*.28;
+    cursor.style.left=cx+'px'; cursor.style.top=cy+'px'; requestAnimationFrame(rafCursor);}
+  rafCursor();
+
+  // ---- dotted field reacting to cursor ----
+  const cv=document.getElementById('field'), ctx=cv.getContext('2d');
+  function size(){ cv.width=1440; cv.height=1000; }
+  size();
+  const gap=30, dots=[];
+  for(let y=gap; y<1000; y+=gap) for(let x=gap; x<1440; x+=gap) dots.push({x,y});
+  function draw(){
+    ctx.clearRect(0,0,1440,1000);
+    for(const d of dots){
+      const dx=d.x-mx, dy=d.y-my, dist=Math.hypot(dx,dy);
+      const near=Math.max(0,1-dist/240);
+      const r=1+near*2.2;
+      ctx.beginPath();ctx.arc(d.x,d.y,r,0,7);
+      if(near>0.04){ctx.fillStyle='rgba(211,85,85,'+(0.12+near*0.55)+')';}
+      else{ctx.fillStyle='rgba(69,69,69,0.10)';}
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // ---- clock ----
+  function tick(){const d=new Date();const o={timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:false};
+    document.getElementById('clock').textContent='NYC '+d.toLocaleTimeString('en-US',o);}
+  tick();setInterval(tick,1000);
+
+  // ---- bars ----
+  const barsEl=document.getElementById('bars');
+  const NB=18; for(let i=0;i<NB;i++){const b=document.createElement('i');barsEl.appendChild(b);}
+  const barEls=[...barsEl.children];
+  // ticks on knob
+  const ticksEl=document.getElementById('ticks');
+  for(let i=0;i<11;i++){const t=document.createElement('i');t.style.transform=`translateX(-50%) rotate(${-135+i*27}deg)`;ticksEl.appendChild(t);}
+
+  // ---- state ----
+  let state={mode:0,precision:72,density:58,tempo:40};
+  const pointer=document.getElementById('pointer');
+  function render(){
+    document.getElementById('verb').textContent=verbs[state.mode];
+    document.getElementById('lede').innerHTML=ledes[state.mode];
+    document.getElementById('ro-mode').textContent=roMode[state.mode];
+    document.getElementById('ro-precision').textContent=Math.round(state.precision);
+    // knob: -135 .. +135
+    pointer.style.transform=`translateX(-50%) rotate(${-135+state.precision/100*270}deg)`;
+    // density slider
+    document.getElementById('d-num').textContent=Math.round(state.density);
+    document.getElementById('fill-d').style.width=state.density+'%';
+    document.getElementById('thumb-d').style.left=state.density+'%';
+    document.getElementById('t-num').textContent=Math.round(state.tempo);
+    document.getElementById('fill-t').style.width=state.tempo+'%';
+    document.getElementById('thumb-t').style.left=state.tempo+'%';
+    document.getElementById('ro-density').textContent=
+      state.density<33?'minimal':state.density<66?'balanced':'high-density';
+  }
+  render();
+
+  // animate bars by tempo + precision
+  let phase=0;
+  function animBars(){
+    phase+=0.02+state.tempo/1400;
+    barEls.forEach((b,i)=>{
+      const base=4+ (Math.sin(phase*3 + i*0.6)*0.5+0.5)*(6+state.precision/4);
+      b.style.height=base+'px';
+      b.style.opacity=0.45+ (i/NB)*0.5;
+    });
+    requestAnimationFrame(animBars);
+  }
+  animBars();
+
+  // ---- modes ----
+  document.getElementById('modes').addEventListener('click',e=>{
+    const btn=e.target.closest('.mode'); if(!btn)return;
+    document.querySelectorAll('.mode').forEach(m=>m.classList.remove('on'));
+    btn.classList.add('on'); state.mode=+btn.dataset.mode; render();
+  });
+
+  // ---- knob drag ----
+  const knob=document.getElementById('knob');
+  let kdrag=false,kStartA=0,kStartV=0;
+  function angleFrom(el,e){const r=el.getBoundingClientRect();
+    return Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2));}
+  knob.addEventListener('pointerdown',e=>{e.preventDefault();kdrag=true;kStartA=angleFrom(knob,e);kStartV=state.precision;knob.setPointerCapture(e.pointerId);});
+  window.addEventListener('pointermove',e=>{
+    if(!kdrag)return;
+    let da=angleFrom(knob,e)-kStartA;
+    while(da>Math.PI)da-=2*Math.PI; while(da<-Math.PI)da+=2*Math.PI;
+    state.precision=Math.max(0,Math.min(100,kStartV+da/(1.5*Math.PI)*100*1.4));
+    render();
+  });
+  window.addEventListener('pointerup',()=>{kdrag=false;});
+
+  // ---- sliders ----
+  function bindSlider(trackId,key){
+    const track=document.getElementById(trackId);
+    let drag=false;
+    function set(e){const r=track.getBoundingClientRect();
+      let v=(e.clientX-r.left)/r.width*100;state[key]=Math.max(0,Math.min(100,v));render();}
+    track.addEventListener('pointerdown',e=>{drag=true;track.setPointerCapture(e.pointerId);set(e);});
+    track.addEventListener('pointermove',e=>{if(drag)set(e);});
+    window.addEventListener('pointerup',()=>{drag=false;});
+  }
+  bindSlider('track-d','density');
+  bindSlider('track-t','tempo');
+})();
+</script>
+</body>
+</html>

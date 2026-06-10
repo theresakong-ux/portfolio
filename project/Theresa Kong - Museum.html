@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theresa Kong — A Mind, On Exhibit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="museum/museum.css">
+</head>
+<body>
+<div class="cur"></div>
+<div class="cur-r"></div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <a class="brand" href="#top">
+    <svg class="gem" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6 5.4 10.8 11.4 11.4v1.2C17.4 13.2 12.6 18 12 24h-1.2C10.2 18 5.4 13.2-.6 12.6v-1.2C5.4 10.8 10.2 6 10.8 0H12z"/></svg>
+    Theresa Kong
+  </a>
+  <div class="wayfind">
+    <a href="#gallery-1" data-scroll="#gallery-1">I · Product</a>
+    <a href="#gallery-2" data-scroll="#gallery-2">II · Photography</a>
+    <a href="#gallery-3" data-scroll="#gallery-3">III · Outside the Box</a>
+    <a href="#wall" data-scroll="#wall">Visitors' Wall</a>
+  </div>
+  <span class="open-tag"><i></i>Open to senior roles</span>
+</nav>
+
+<!-- ============ I. ENTRANCE ============ -->
+<header class="entrance" id="top">
+  <div class="dust"></div>
+  <div class="spot"></div>
+  <div class="plate">
+    <div class="eyebrow">Now on view · New York</div>
+    <h1>
+      <span class="l" style="animation-delay:.30s">T</span><span class="l" style="animation-delay:.36s">H</span><span class="l" style="animation-delay:.42s">E</span><span class="l" style="animation-delay:.48s">R</span><span class="l" style="animation-delay:.54s">E</span><span class="l" style="animation-delay:.60s">S</span><span class="l" style="animation-delay:.66s">A</span><br>
+      <span class="l" style="animation-delay:.72s">K</span><span class="l" style="animation-delay:.78s">O</span><span class="l" style="animation-delay:.84s">N</span><span class="l" style="animation-delay:.90s">G</span>
+    </h1>
+    <p class="sub">A senior product designer's mind, <em>on exhibit</em>. Move your light across the room.</p>
+  </div>
+  <div class="placard">
+    <div class="line"></div>
+    <div class="txt">Scroll to enter the galleries</div>
+  </div>
+</header>
+
+<!-- ============ FOYER ============ -->
+<section class="foyer">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="rn">◆</span>
+      <span class="ttl">The Foyer · Visitor's Guide</span>
+    </div>
+    <h2 class="lead reveal">Three galleries, one way of <span class="hl">thinking</span>.</h2>
+    <p class="lede reveal">I design at the seams of multi-sided problems — the places where travelers, hosts, and operations all pull in different directions. Every room here is the same mind in a different medium: rigorous in product, patient behind a lens, playful when the box gets boring.</p>
+
+    <div class="directory">
+      <a class="gcard span7 reveal" data-scroll="#gallery-1" href="#gallery-1">
+        <canvas class="scene" data-scene="product"></canvas>
+        <div class="glow"></div>
+        <div class="meta">
+          <div class="num">Gallery I</div>
+          <h3>Product Design</h3>
+          <p class="desc">Three case studies, each entered like a room. Walk through the real process — empathize, define, ideate, prototype, test.</p>
+          <span class="enter">Enter the gallery <span class="arw">→</span></span>
+        </div>
+      </a>
+      <a class="gcard span5 reveal" data-scroll="#gallery-2" href="#gallery-2">
+        <canvas class="scene" data-scene="photo"></canvas>
+        <div class="glow"></div>
+        <div class="meta">
+          <div class="num">Gallery II</div>
+          <h3>Photography</h3>
+          <p class="desc">The same eye for composition, off the screen.</p>
+          <span class="enter">Enter the gallery <span class="arw">→</span></span>
+        </div>
+      </a>
+      <a class="gcard span12 reveal" data-scroll="#gallery-3" href="#gallery-3">
+        <canvas class="scene" data-scene="dotb" style="position:absolute;inset:0"></canvas>
+        <div class="glow" style="background:linear-gradient(90deg,rgba(20,14,10,.82),transparent 60%)"></div>
+        <div class="meta vmeta">
+          <div class="num">Gallery III</div>
+          <h3>Do Outside the Box</h3>
+          <p class="desc">3D donuts, rainbow stairs, a red pigeon. Experiments that keep the craft curious.</p>
+        </div>
+        <span class="enter" style="position:relative;z-index:2;color:var(--cream)">Enter the gallery <span class="arw">→</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY I — PRODUCT DESIGN ============ -->
+<section class="gallery bright alt" id="gallery-1">
+  <div class="ghead">
+    <div class="shead reveal"><span class="rn">I</span><span class="ttl">Product Design · 3 exhibits</span></div>
+    <h2 class="reveal">Click a piece to step inside the room.</h2>
+    <p class="reveal">Each case opens like an exhibit hall — a 360° walk through how the work actually happened, not a gallery of final screens. The structure is the same one I've trusted for six years: empathize, define, ideate, prototype, test.</p>
+  </div>
+  <div class="exhibits">
+
+    <article class="exhibit reveal" data-case="errunds">
+      <div class="ex-art"><canvas data-art="0"></canvas><span class="frameno mono">Frame 01</span></div>
+      <div class="ex-body">
+        <div class="co">TourHero · 2025 — 2026</div>
+        <h3>A self-launch ecosystem for a three-sided marketplace</h3>
+        <p class="blurb">An AI-assisted intent layer that collapses a 29-day, human-run quoting cycle into same-day publishing — without taking judgment out of human hands.</p>
+        <div class="stats">
+          <div class="stat"><div class="n">Same-day</div><div class="k">from 29 days</div></div>
+          <div class="stat"><div class="n">−25 hrs</div><div class="k">coordinator time / wk</div></div>
+          <div class="stat"><div class="n">3-sided</div><div class="k">one surface</div></div>
+        </div>
+        <span class="view">Step inside <span class="dot"></span><span class="arw">→</span></span>
+      </div>
+    </article>
+
+    <article class="exhibit reveal" data-case="journey">
+      <div class="ex-art"><canvas data-art="1"></canvas><span class="frameno mono">Frame 02</span></div>
+      <div class="ex-body">
+        <div class="co">TourHero · 2021 — 2025</div>
+        <h3>Building the 0 → 1 consumer journey</h3>
+        <p class="blurb">As founding designer: no product, no system, three competing surfaces. I built the whole journey — discovery, booking, and a readiness portal for the anxious middle.</p>
+        <div class="stats">
+          <div class="stat"><div class="n">0 → 1</div><div class="k">founding design</div></div>
+          <div class="stat"><div class="n">4 yrs</div><div class="k">journey to scale</div></div>
+          <div class="stat"><div class="n">1 system</div><div class="k">three surfaces</div></div>
+        </div>
+        <span class="view">Step inside <span class="dot"></span><span class="arw">→</span></span>
+      </div>
+    </article>
+
+    <article class="exhibit reveal" data-case="taxonomy">
+      <div class="ex-art"><canvas data-art="2"></canvas><span class="frameno mono">Frame 03</span></div>
+      <div class="ex-body">
+        <div class="co">Errunds · 2020 — 2021</div>
+        <h3>Grocery taxonomy & multi-SKU navigation</h3>
+        <p class="blurb">A thousand SKUs made to feel like a well-organized aisle — a tree hierarchy mirroring the physical store, validated until task success hit 100%.</p>
+        <div class="stats">
+          <div class="stat"><div class="n">100%</div><div class="k">task success</div></div>
+          <div class="stat"><div class="n">−50%</div><div class="k">time to complete</div></div>
+          <div class="stat"><div class="n">1 library</div><div class="k">reusable components</div></div>
+        </div>
+        <span class="view">Step inside <span class="dot"></span><span class="arw">→</span></span>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ GALLERY II — PHOTOGRAPHY ============ -->
+<section class="gallery deep" id="gallery-2">
+  <div class="ghead">
+    <div class="shead reveal"><span class="rn">II</span><span class="ttl">Photography · The same eye, off-screen</span></div>
+    <h2 class="reveal">Composition is composition, lens or layout.</h2>
+    <p class="reveal">Drop your frames into the wall — drag any image onto a slot and it stays. A salon hang of the way I see light, structure, and the quiet moments between.</p>
+  </div>
+  <div class="photo-wall">
+    <image-slot id="ph1" style="height:340px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph2" style="height:240px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph3" style="height:300px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph4" style="height:360px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph5" style="height:260px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph6" style="height:320px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph7" style="height:280px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph8" style="height:340px" placeholder="Drop a photo"></image-slot>
+    <image-slot id="ph9" style="height:240px" placeholder="Drop a photo"></image-slot>
+  </div>
+  <p class="photo-cap">Nine frames · drag your own images to curate the wall</p>
+</section>
+
+<!-- ============ GALLERY III — DO OUTSIDE THE BOX ============ -->
+<section class="gallery bright" id="gallery-3">
+  <div class="ghead">
+    <div class="shead reveal"><span class="rn">III</span><span class="ttl">Do Outside the Box · Experiments</span></div>
+    <h2 class="reveal">Don't just think outside the box. Do it.</h2>
+    <p class="reveal">Side quests in 3D, motion, and illustration — the play that keeps the craft sharp. A few of the things I made just to stay curious.</p>
+  </div>
+  <div class="dotb">
+    <div class="toy reveal"><canvas data-toy="donut"></canvas><span class="tlabel">3D Donut · Blender</span></div>
+    <div class="toy reveal"><canvas data-toy="sushi"></canvas><span class="tlabel">3D Sushi · Blender</span></div>
+    <div class="toy reveal wide"><canvas data-toy="stairs"></canvas><span class="tlabel">3D Rainbow Stairs</span></div>
+    <div class="toy reveal"><canvas data-toy="pigeon"></canvas><span class="tlabel">Red Pigeon · Logo</span></div>
+    <div class="toy reveal"><canvas data-toy="heart"></canvas><span class="tlabel">Icon Microinteraction</span></div>
+    <div class="toy reveal"><canvas data-toy="slider"></canvas><span class="tlabel">Interactive Slider · XD</span></div>
+    <div class="toy reveal"><canvas data-toy="donut"></canvas><span class="tlabel">Burrito Illustration</span></div>
+  </div>
+</section>
+
+<!-- ============ VISITORS' WALL ============ -->
+<section class="visitors" id="wall">
+  <div class="vhead">
+    <div class="shead reveal" style="justify-content:center"><span class="rn">◆</span><span class="ttl" style="color:var(--cream-soft)">The Visitors' Wall</span></div>
+    <h2 class="reveal">Leave your <span class="hl">mark</span> on the exhibit.</h2>
+    <p class="vsub reveal">Every museum should be a little co-authored. Pick a color and paint — your strokes stay on the wall for the next visitor. The canvas remembers.</p>
+  </div>
+  <div class="canvas-shell reveal">
+    <canvas id="paint"></canvas>
+    <div class="palette">
+      <span class="swatch" data-c="#d35555"></span>
+      <span class="swatch" data-c="#d98e38"></span>
+      <span class="swatch" data-c="#e7c14b"></span>
+      <span class="swatch" data-c="#4e946a"></span>
+      <span class="swatch" data-c="#3f7fb0"></span>
+      <span class="swatch" data-c="#aa6e98"></span>
+      <span class="swatch" data-c="#211913"></span>
+      <span class="sep"></span>
+      <button class="ptool" id="clearWall">Clear mine</button>
+    </div>
+  </div>
+  <p class="vcount reveal"><b id="vcount">284</b> &nbsp;visitors have left their color</p>
+</section>
+
+<!-- ============ COLOPHON ============ -->
+<footer class="colophon">
+  <div class="cwrap">
+    <div class="big reveal">Let's build something<br>that feels <a href="mailto:hello@theresakong.com">inevitable →</a></div>
+    <div class="rt reveal">
+      <a href="mailto:hello@theresakong.com">hello@theresakong.com</a>
+      <a href="https://www.linkedin.com/in/theresa-kong/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a href="https://theresakong.com" target="_blank" rel="noopener">Previous portfolio ↗</a>
+    </div>
+  </div>
+  <div class="fine">
+    <span>© 2026 Theresa Kong</span>
+    <span>A Mind, On Exhibit — New York</span>
+  </div>
+</footer>
+
+<!-- ============ IMMERSIVE CASE ROOM (overlay) ============ -->
+<div class="room" id="room">
+  <div class="room-progress" id="roomProgress"></div>
+  <button class="room-close" id="roomClose">✕ &nbsp;Leave room</button>
+  <div id="roomBody"></div>
+</div>
+
+<script src="museum/image-slot.js"></script>
+<script src="museum/museum.js"></script>
+</body>
+</html>

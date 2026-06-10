@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Theresa Kong — Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ---- Studio (default) : warm porcelain + aurora ---- */
+  --wall-1:#ece9e3; --wall-2:#e3dfd6;
+  --au-1:#f4cabb; --au-2:#edbfce; --au-3:#c8d8ea; --au-4:#f4e3c2;
+  --grid:rgba(69,69,69,.032);
+  --panel:#fbfaf7; --panel-2:#f3f1ec;
+  --ink:#454545; --ink-soft:#8b887f; --ink-faint:#b5b2a8;
+  --edge:rgba(69,69,69,.12); --edge-soft:rgba(69,69,69,.07);
+  --accent:#d35555; --accent-deep:#b8413f; --on-accent:#fff;
+  --shadow:rgba(60,55,45,.18);
+  /* liquid glass */
+  --glass:rgba(255,255,255,.42);
+  --glass-2:rgba(255,255,255,.6);
+  --glass-brd:rgba(255,255,255,.72);
+  --glass-rim:rgba(255,255,255,.9);
+  --glass-shadow:rgba(60,55,45,.24);
+  --menu-ink:#454545;
+  --sticky-yellow:#f4e08a; --sticky-yellow-ink:#5b4e1f;
+  --note:#fbfaf7;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-back:cubic-bezier(.34,1.56,.64,1);
+  --spring:cubic-bezier(.5,1.55,.4,1);
+  --snap:cubic-bezier(.34,1.5,.5,1);
+}
+[data-theme="dusk"]{
+  --wall-1:#1b1a23; --wall-2:#121118;
+  --au-1:#834a66; --au-2:#454379; --au-3:#2c5e6e; --au-4:#7a4750;
+  --grid:rgba(255,255,255,.032);
+  --panel:#2a2833; --panel-2:#23222c;
+  --ink:#eceae3; --ink-soft:#a5a1b0; --ink-faint:#6b6878;
+  --edge:rgba(255,255,255,.13); --edge-soft:rgba(255,255,255,.07);
+  --accent:#e8716f; --accent-deep:#d35555; --on-accent:#1a1820;
+  --shadow:rgba(0,0,0,.5);
+  --glass:rgba(40,38,50,.4);
+  --glass-2:rgba(46,44,57,.6);
+  --glass-brd:rgba(255,255,255,.16);
+  --glass-rim:rgba(255,255,255,.24);
+  --glass-shadow:rgba(0,0,0,.55);
+  --menu-ink:#eceae3;
+  --sticky-yellow:#e9d27a; --sticky-yellow-ink:#4a3f17;
+  --note:#2f2d39;
+}
+[data-theme="blueprint"]{
+  --wall-1:#dbe5ef; --wall-2:#c7d6e6;
+  --au-1:#bcd2ec; --au-2:#a9c6e0; --au-3:#cfe0ea; --au-4:#e6dcc8;
+  --grid:rgba(40,70,110,.06);
+  --panel:#f7fafd; --panel-2:#eaf1f8;
+  --ink:#33414f; --ink-soft:#6c7c8c; --ink-faint:#a3b0bd;
+  --edge:rgba(40,70,110,.14); --edge-soft:rgba(40,70,110,.08);
+  --accent:#d35555; --accent-deep:#b8413f; --on-accent:#fff;
+  --shadow:rgba(40,60,90,.22);
+  --glass:rgba(255,255,255,.44);
+  --glass-2:rgba(255,255,255,.62);
+  --glass-brd:rgba(255,255,255,.72);
+  --glass-rim:rgba(255,255,255,.9);
+  --glass-shadow:rgba(40,60,90,.26);
+  --menu-ink:#33414f;
+  --sticky-yellow:#f3df87; --sticky-yellow-ink:#56491c;
+  --note:#f7fafd;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Instrument Sans',system-ui,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(165deg,var(--wall-1),var(--wall-2));
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
+  transition:background .6s var(--ease),color .4s var(--ease);
+}
+.mono{font-family:'Instrument Sans',system-ui,sans-serif;letter-spacing:0}
+
+/* ---- ambient aurora wallpaper ---- */
+#aurora{position:fixed;inset:-12%;z-index:0;overflow:hidden;pointer-events:none;
+  transition:transform .5s var(--ease)}
+.blob{position:absolute;width:50vw;height:50vw;border-radius:50%;filter:blur(70px);opacity:.82;will-change:transform}
+.blob.b1{background:radial-gradient(circle at 50% 50%,var(--au-1),transparent 66%);left:-8%;top:-12%;animation:drift1 36s var(--ease) infinite alternate}
+.blob.b2{background:radial-gradient(circle at 50% 50%,var(--au-2),transparent 66%);right:-10%;top:-6%;animation:drift2 44s var(--ease) infinite alternate}
+.blob.b3{background:radial-gradient(circle at 50% 50%,var(--au-3),transparent 66%);left:6%;bottom:-18%;animation:drift3 40s var(--ease) infinite alternate}
+.blob.b4{background:radial-gradient(circle at 50% 50%,var(--au-4),transparent 68%);right:2%;bottom:-14%;animation:drift4 48s var(--ease) infinite alternate}
+@keyframes drift1{to{transform:translate(13vw,7vh) scale(1.18)}}
+@keyframes drift2{to{transform:translate(-11vw,9vh) scale(1.12)}}
+@keyframes drift3{to{transform:translate(10vw,-8vh) scale(1.2)}}
+@keyframes drift4{to{transform:translate(-9vw,-6vh) scale(1.14)}}
+
+/* faint grid + vignette texture over the aurora */
+#desk{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+#desk::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(130% 100% at 50% -10%,transparent 52%,color-mix(in oklab,var(--wall-2) 60%,transparent));
+  pointer-events:none;
+}
+@media (prefers-reduced-motion: reduce){
+  .blob{animation:none}
+  #aurora{transition:none}
+}
+
+/* ---------------- floating glass menu pills ---------------- */
+.menubar{
+  position:fixed;top:11px;left:11px;right:11px;height:46px;z-index:5000;
+  display:flex;align-items:stretch;justify-content:space-between;gap:11px;
+  pointer-events:none;
+}
+.mb-pill{
+  pointer-events:auto;display:flex;align-items:center;gap:13px;
+  padding:0 17px;border-radius:23px;color:var(--menu-ink);
+  position:relative;isolation:isolate;
+  background:color-mix(in oklab,var(--panel) 9%,transparent);
+  backdrop-filter:blur(22px) saturate(210%) brightness(1.05);
+  -webkit-backdrop-filter:blur(22px) saturate(210%) brightness(1.05);
+  box-shadow:
+    0 14px 32px -18px var(--glass-shadow),
+    0 2px 8px -4px var(--glass-shadow),
+    inset 0 -9px 16px -12px color-mix(in oklab,#fff 50%,transparent);
+}
+/* refractive rim — a bright gradient edge that wraps the capsule like bent light */
+.mb-pill::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  padding:1.3px;
+  background:linear-gradient(118deg,
+    color-mix(in oklab,#fff 80%,transparent),
+    color-mix(in oklab,#fff 18%,transparent) 28%,
+    color-mix(in oklab,#fff 4%,transparent) 48%,
+    color-mix(in oklab,#fff 22%,transparent) 70%,
+    color-mix(in oklab,#fff 70%,transparent));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude}
+/* specular sheen across the top curve */
+.mb-pill::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:linear-gradient(177deg,color-mix(in oklab,#fff 36%,transparent),transparent 42%)}
+.mb-left{font-size:13px}
+.mb-mark{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.01em;white-space:nowrap}
+.mb-mark .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 22%,transparent)}
+.mb-sep{width:1px;height:16px;background:var(--edge);opacity:.7;flex:0 0 auto}
+.mb-status{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
+.mb-right{gap:7px}
+.mb-link{
+  display:flex;align-items:center;gap:6px;height:31px;padding:0 12px;border-radius:10px;
+  font-size:12.5px;font-weight:500;color:var(--menu-ink);text-decoration:none;
+  border:1px solid transparent;transition:background .2s,border-color .2s,transform .2s var(--ease-back);
+}
+.mb-link:hover{background:color-mix(in oklab,var(--ink) 9%,transparent);transform:translateY(-1px)}
+.mb-clock{font-size:12px;letter-spacing:.04em;color:var(--ink-soft);min-width:64px;text-align:right}
+.theme-sw{display:flex;gap:6px;align-items:center;padding-left:5px}
+.theme-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid var(--edge);
+  transition:transform .2s var(--ease-back),border-color .2s}
+.theme-dot:hover{transform:scale(1.15)}
+.theme-dot.on{border-color:var(--accent)}
+.theme-dot[data-t="studio"]{background:linear-gradient(135deg,#f3ddcf,#d8d5cc)}
+.theme-dot[data-t="dusk"]{background:linear-gradient(135deg,#5a4a66,#1a1820)}
+.theme-dot[data-t="blueprint"]{background:linear-gradient(135deg,#dde6ef,#9fc0dd)}
+@media (max-width:720px){.mb-status,.mb-clock{display:none}}
+
+/* ---------------- icons ---------------- */
+.layer{position:fixed;inset:0;z-index:50}
+.icon{
+  position:absolute;width:128px;cursor:grab;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  touch-action:none;
+}
+.icon:active{cursor:grabbing}
+.icon .art{
+  width:96px;height:96px;position:relative;
+  transition:transform .35s var(--ease);
+  transform-style:preserve-3d;will-change:transform;
+}
+.icon .glyph{
+  position:absolute;inset:0;border-radius:21px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 24px -10px var(--shadow);
+  backface-visibility:hidden;
+}
+.icon .label{
+  font-size:14px;font-weight:600;color:var(--ink);text-align:center;line-height:1.2;
+  padding:1px 7px;border-radius:6px;white-space:nowrap;
+  text-shadow:0 1px 0 color-mix(in oklab,var(--wall-1) 60%,transparent);
+}
+.icon .label.wrap{white-space:normal}
+.icon .sub{font-size:11px;color:var(--ink-soft);margin-top:1px;text-align:center}
+.icon.sel .label{background:color-mix(in oklab,var(--accent) 90%,transparent);color:var(--on-accent);text-shadow:none}
+
+/* ---- squircle desktop icons (folders + single apps) ---- */
+.folder,.single{width:158px;gap:14px}
+.folder .art,.single .art{width:134px;height:134px;position:relative;transform:none;
+  transform-style:flat;transition:transform .2s var(--snap)}
+.folder .label,.single .label{
+  font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--ink);
+  text-align:center;line-height:1.18;white-space:nowrap;padding:0;
+  text-shadow:0 1px 1px color-mix(in oklab,var(--wall-1) 55%,transparent);
+}
+.folder .label.wrap,.single .label.wrap{white-space:normal;max-width:150px}
+.icon .count{
+  font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;
+  margin-top:-7px;line-height:1.2;
+  text-shadow:0 1px 1px color-mix(in oklab,var(--wall-1) 50%,transparent);
+}
+.icon .count.accent{color:var(--accent);font-weight:600}
+/* running (open) indicator */
+.icon.running .label{position:relative}
+.icon.running .label::before{content:"";position:absolute;left:-13px;top:50%;width:5px;height:5px;
+  border-radius:50%;background:var(--accent);transform:translateY(-50%);
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 20%,transparent)}
+
+/* shared squircle card */
+.fcard,.scard{
+  position:absolute;inset:0;border-radius:31px;overflow:hidden;background:var(--panel);
+  border:1px solid var(--glass-brd);
+  box-shadow:0 18px 32px -16px var(--glass-shadow),0 4px 9px -6px var(--glass-shadow),inset 0 1px 0 var(--glass-rim);
+  transition:transform .2s var(--snap),box-shadow .18s var(--ease);
+  will-change:transform;backface-visibility:hidden;
+}
+.fcard image-slot,.scard image-slot{width:100%;height:100%;display:block}
+.scard svg{position:relative;z-index:1}
+
+/* folder: stacked thumbnails that fan out on hover */
+.fcard.tint::before{content:"";position:absolute;inset:0;background:var(--tint)}
+.fcard .ph,.scard .ph{position:absolute;inset:0;z-index:1;background-size:cover;background-position:center 32%;
+  opacity:0;transition:opacity .4s var(--ease)}
+.fcard.has-photo .ph,.scard.has-photo .ph{opacity:1}
+.scard .ph{transform:scale(1.09);background-position:center 28%}
+.folder .fc-front{z-index:3}
+.folder .fc-b1{z-index:2;transform:translate(9px,-7px) rotate(5deg) scale(.965)}
+.folder .fc-b2{z-index:1;transform:translate(17px,-13px) rotate(10deg) scale(.93)}
+.folder:hover .fc-front{transform:translateY(-7px) scale(1.025)}
+.folder:hover .fc-b1{transform:translate(25px,-9px) rotate(9.5deg) scale(.965)}
+.folder:hover .fc-b2{transform:translate(45px,-17px) rotate(17deg) scale(.93)}
+.folder:active .art{transform:scale(.97)}
+
+/* single app squircle */
+.single .scard{display:flex;align-items:center;justify-content:center}
+.single:hover .scard{transform:translateY(-7px) scale(1.04)}
+.single:active .art{transform:scale(.97)}
+.scard.guest{background:linear-gradient(152deg,var(--accent),var(--accent-deep))}
+.scard.paper{background:linear-gradient(158deg,#ffffff,#ece7df)}
+.scard.portrait{background:linear-gradient(152deg,color-mix(in oklab,var(--accent) 20%,var(--panel)),var(--panel-2))}
+
+/* sticky note */
+.sticky{width:226px}
+.sticky .pad{
+  width:100%;padding:18px 18px 20px;border-radius:3px 12px 12px 12px;
+  box-shadow:0 14px 30px -12px var(--shadow);cursor:grab;
+  transition:transform .35s var(--ease);transform-style:preserve-3d;
+}
+.sticky.yellow .pad{background:var(--sticky-yellow);color:var(--sticky-yellow-ink)}
+.sticky.paper .pad{background:var(--note);color:var(--ink);border:1px solid var(--edge-soft)}
+.sticky h3{font-size:21px;font-weight:800;letter-spacing:-.01em;margin-bottom:8px;line-height:1.05}
+.sticky p{font-size:13.5px;line-height:1.5;font-weight:450}
+.sticky .pin{position:absolute;top:-7px;left:18px;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);box-shadow:0 2px 5px var(--shadow),inset 0 -2px 3px rgba(0,0,0,.2)}
+
+/* hint chip */
+.hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;
+  font-family:'Instrument Sans',system-ui,sans-serif;font-size:11.5px;color:var(--ink-soft);
+  background:var(--glass-2);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid var(--edge-soft);border-radius:999px;padding:7px 15px;letter-spacing:.02em;
+  display:flex;align-items:center;gap:8px;transition:opacity .5s;box-shadow:0 8px 22px -12px var(--shadow)}
+.hint .k{background:color-mix(in oklab,var(--ink) 10%,transparent);border-radius:5px;padding:1px 6px;font-size:10.5px}
+
+/* ---------------- magnifying glass dock ---------------- */
+.dock{position:fixed;left:50%;bottom:15px;transform:translateX(-50%);z-index:4000;pointer-events:none}
+.dock-inner{
+  pointer-events:auto;display:flex;align-items:flex-end;gap:11px;padding:11px 15px;
+  border-radius:26px;background:var(--glass);
+  backdrop-filter:blur(34px) saturate(185%);-webkit-backdrop-filter:blur(34px) saturate(185%);
+  border:1px solid var(--glass-brd);
+  box-shadow:0 22px 54px -18px var(--glass-shadow),0 4px 14px -8px var(--glass-shadow),inset 0 1px 0 var(--glass-rim);
+}
+.dock-app{
+  position:relative;width:54px;height:54px;flex:0 0 54px;border:none;background:none;padding:0;
+  cursor:pointer;transform-origin:bottom center;will-change:transform;touch-action:none;
+}
+.dock-ico{
+  width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;will-change:transform;
+  box-shadow:0 7px 15px -7px var(--shadow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -4px 9px rgba(0,0,0,.07);
+}
+.dock-ico::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(157deg,rgba(255,255,255,.5),rgba(255,255,255,0) 46%);pointer-events:none}
+.dock-ico svg{width:30px;height:30px;display:block;position:relative;z-index:1}
+.dock-ico .mono-mark{position:relative;z-index:1;font-weight:800;font-size:21px;letter-spacing:-.03em;color:#fff}
+/* per-app gradients */
+.gx-about{background:linear-gradient(150deg,#e0715f,#c5454c)}
+.gx-work{background:linear-gradient(150deg,#6f93c4,#3d6da8)}
+.gx-photo{background:linear-gradient(150deg,#6b6f79,#3a3e48)}
+.gx-dotb{background:linear-gradient(150deg,#edb24e,#df8430)}
+.gx-guest{background:linear-gradient(150deg,#e58aa6,#c85f86)}
+.gx-resume{background:linear-gradient(150deg,#fcfbf8,#e7e3db)}
+.dock-div{width:1px;height:40px;align-self:center;background:var(--edge);opacity:.6;margin:0 3px}
+/* running indicator */
+.dock-app::after{content:"";position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border-radius:50%;
+  background:var(--menu-ink);opacity:.55;transform:translateX(-50%) scale(0);transition:transform .25s var(--ease-back)}
+.dock-app.running::after{transform:translateX(-50%) scale(1)}
+/* tooltip */
+.dock-tip{
+  position:absolute;left:50%;bottom:100%;margin-bottom:14px;transform:translate(-50%,6px);
+  white-space:nowrap;font-size:12.5px;font-weight:600;color:var(--menu-ink);
+  background:var(--glass-2);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid var(--glass-brd);border-radius:10px;padding:5px 11px;
+  opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;
+  box-shadow:0 7px 18px -9px var(--glass-shadow),inset 0 1px 0 var(--glass-rim)}
+.dock-app.tip-on .dock-tip{opacity:1;transform:translate(-50%,0)}
+@media (max-width:560px){.dock-inner{gap:7px;padding:9px 11px}.dock-app,.dock-app .dock-ico{width:46px;height:46px;flex-basis:46px}}
+
+/* ---------------- windows ---------------- */
+.win{
+  position:fixed;z-index:1000;display:flex;flex-direction:column;
+  background:color-mix(in oklab,var(--panel) 34%,transparent);
+  backdrop-filter:blur(40px) saturate(190%);-webkit-backdrop-filter:blur(40px) saturate(190%);
+  border:1px solid var(--glass-brd);
+  border-radius:18px;overflow:hidden;
+  box-shadow:0 44px 96px -32px var(--glass-shadow),0 8px 22px -12px var(--glass-shadow),inset 0 1px 0 var(--glass-rim);
+  transform-origin:var(--ox,50%) var(--oy,90%);
+  animation:winIn .42s var(--spring) both;
+}
+@keyframes winIn{from{opacity:0;transform:scale(.86) translateY(16px)}to{opacity:1;transform:none}}
+@keyframes winOut{
+  0%{opacity:1;transform:scale(1)}
+  26%{opacity:1;transform:scale(1.055)}
+  100%{opacity:0;transform:scale(.74) translateY(16px)}
+}
+.win.closing{animation:winOut .42s cubic-bezier(.5,0,.78,.9) forwards}
+.win .bar{
+  height:46px;flex:0 0 46px;display:flex;align-items:center;gap:10px;padding:0 15px;cursor:grab;
+  background:transparent;
+  backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);
+}
+.win .bar:active{cursor:grabbing}
+.lights{display:flex;gap:8px;align-items:center}
+.lights span{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.08);
+  display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1;color:rgba(0,0,0,.45);font-weight:700}
+.lights .c{background:#ec6a5e;cursor:pointer}
+.lights .y{background:#f3bf4f}.lights .g{background:#61c454}
+.lights:hover .c::before{content:"\00d7"}
+.lights:hover .y::before{content:"\2013"}
+.lights:hover .g::before{content:"\2197"}
+.win .bar .wt{font-size:13px;font-weight:600;color:var(--ink)}
+.win .bar .wt .path{color:var(--ink-faint);font-weight:500}
+.win .body{flex:1;overflow-y:auto;overflow-x:hidden;background:transparent}
+.win .body::-webkit-scrollbar{width:10px}
+.win .body::-webkit-scrollbar-thumb{background:var(--edge);border-radius:9px;border:3px solid transparent;background-clip:padding-box}
+
+/* window content blocks */
+.pad-l{padding:26px 30px 34px}
+.wlead{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
+.wkicker{font-family:'Instrument Sans';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.wtitle{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.04}
+.wsub{font-size:15px;color:var(--ink-soft);line-height:1.5;max-width:60ch}
+
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.chip{font-family:'Instrument Sans';font-size:11px;color:var(--ink-soft);border:1px solid var(--edge);border-radius:999px;padding:5px 11px;letter-spacing:.02em}
+.chip.hi{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 35%,transparent)}
+
+/* work list — one project per horizontal row */
+.work-grid{display:flex;flex-direction:column;gap:22px;margin-top:12px}
+.proj-card{
+  position:relative;
+  display:grid;grid-template-columns:minmax(300px,40%) 1fr;gap:34px;align-items:center;
+  padding:22px;border:1px solid var(--edge-soft);border-radius:18px;
+  background:color-mix(in oklab,var(--panel) 52%,transparent);
+  cursor:pointer;
+  transition:box-shadow .16s var(--ease),border-color .16s var(--ease),opacity .16s var(--ease);
+}
+/* dim the un-hovered siblings so the hovered project pops */
+.work-grid:hover .proj-card{opacity:.42}
+.work-grid:hover .proj-card:hover{opacity:1}
+.proj-card:hover{z-index:4;box-shadow:0 24px 50px -26px var(--shadow);border-color:var(--edge)}
+
+/* single cover that snaps bigger + tilts + casts a dynamic 3D shadow */
+.proj-thumb{position:relative;aspect-ratio:2/1;perspective:760px;overflow:visible}
+.thumb-deck{position:absolute;inset:0;transform-origin:50% 55%;transform-style:preserve-3d;
+  transition:transform .22s cubic-bezier(.2,.85,.3,1)}
+/* the shadow lives behind the cover and shifts with the tilt (--shx/--shy) */
+.thumb-deck::before{content:"";position:absolute;inset:0;border-radius:18px;z-index:0;
+  background:radial-gradient(120% 120% at 50% 50%,rgba(40,28,18,.55),rgba(40,28,18,.32) 55%,transparent 78%);
+  filter:blur(20px);opacity:0;transform:translate(0,10px) scale(.9);
+  transition:opacity .22s var(--ease),transform .22s cubic-bezier(.2,.85,.3,1)}
+.proj-card:hover .thumb-deck::before{opacity:.6;
+  transform:translate(var(--shx,0px),var(--shy,24px)) scale(.96)}
+.thumb-deck .front{position:absolute;inset:0;width:100%;height:100%;display:block;
+  border-radius:14px;overflow:hidden;z-index:5;box-shadow:0 14px 30px -18px var(--shadow)}
+.proj-card:hover .thumb-deck{transform:scale(1.12) rotate(-4deg)}
+.proj-card:hover .thumb-deck .front{box-shadow:0 30px 56px -20px var(--shadow)}
+
+.proj-meta{min-width:0;transition:transform .22s cubic-bezier(.2,.85,.3,1)}
+.proj-card:hover .proj-meta{transform:translateX(12px)}
+.proj-meta .pc-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.proj-meta h4{font-size:25px;font-weight:700;letter-spacing:-.02em;display:inline-flex;align-items:center;gap:9px}
+.draw-arrow{width:21px;height:21px;color:var(--accent);opacity:0;transform:translate(-5px,5px);
+  transition:opacity .3s var(--ease),transform .4s var(--spring)}
+.draw-arrow path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .45s var(--ease)}
+.draw-arrow path:nth-child(2){transition-delay:.14s}
+.proj-card:hover .draw-arrow{opacity:1;transform:none}
+.proj-card:hover .draw-arrow path{stroke-dashoffset:0}
+.proj-meta .yr{font-size:13px;color:var(--ink-faint);white-space:nowrap}
+.proj-meta .role{font-size:14.5px;color:var(--accent);font-weight:600;margin-top:3px}
+.proj-tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.proj-tags .tag{font-size:12.5px;font-weight:500;color:var(--ink);border:1px solid var(--edge);border-radius:999px;
+  padding:6px 13px;letter-spacing:.01em;background:color-mix(in oklab,var(--panel) 55%,transparent)}
+
+/* case study spine */
+.case-back{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;
+  border:1px solid var(--edge);background:color-mix(in oklab,var(--panel) 70%,transparent);
+  backdrop-filter:blur(14px) saturate(180%);-webkit-backdrop-filter:blur(14px) saturate(180%);
+  font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;position:relative;z-index:2;
+  transition:transform .2s var(--ease-back),border-color .2s,color .2s,background .2s}
+.case-back:hover{transform:translateX(-3px);border-color:var(--accent);color:var(--accent)}
+.case-back .ar{font-size:16px;line-height:1}
+/* progressive "liquid glass" header: heaviest blur at the very top, fading to
+   fully transparent toward the bottom. Two stacked masked backdrop layers. */
+.case-topbar{position:sticky;top:0;z-index:6;padding:14px 30px;background:none;overflow:visible}
+.case-topbar::before,.case-topbar::after{content:"";position:absolute;left:0;right:0;top:0;
+  pointer-events:none;z-index:1}
+.case-topbar::before{height:150px;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  -webkit-mask:linear-gradient(to bottom,#000 0%,#000 28%,transparent 78%);
+          mask:linear-gradient(to bottom,#000 0%,#000 28%,transparent 78%)}
+.case-topbar::after{height:92px;
+  backdrop-filter:blur(12px) saturate(165%);-webkit-backdrop-filter:blur(12px) saturate(165%);
+  background:linear-gradient(to bottom,color-mix(in oklab,var(--panel) 32%,transparent),transparent);
+  -webkit-mask:linear-gradient(to bottom,#000 0%,#000 20%,transparent 62%);
+          mask:linear-gradient(to bottom,#000 0%,#000 20%,transparent 62%)}
+.case-hero{aspect-ratio:2/1;height:auto;position:relative;overflow:hidden;
+  background:color-mix(in oklab,var(--panel-2) 55%,transparent);background-size:cover;background-position:center;
+  border-bottom:1px solid var(--edge-soft)}
+.case-hero image-slot{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* when a project cover is feeding the hero, hide the empty slot's dashed UI so
+   the cover shows clean — a drop still replaces it; clearing reverts to cover */
+.case-hero.has-cover image-slot::part(empty){opacity:0}
+.case-hero.has-cover image-slot::part(ring){display:none}
+.spine{position:relative;margin-top:26px}
+.step{display:grid;grid-template-columns:128px 1fr;gap:22px;padding:22px 0;border-top:1px solid var(--edge-soft)}
+.step:first-child{border-top:none}
+.step .sidx{font-family:'Instrument Sans';font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.06em}
+.step .sidx .n{display:block;font-size:34px;color:var(--ink-faint);font-weight:400;margin-top:4px;line-height:1}
+.step h5{font-size:18px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
+.step p{font-size:14px;line-height:1.6;color:var(--ink-soft);max-width:62ch}
+.step .sshot{margin-top:14px;border-radius:11px;overflow:hidden;border:1px solid var(--edge-soft);height:200px;background:var(--panel-2)}
+.step .sshot image-slot{width:100%;height:100%;display:block}
+.step .quote{margin-top:12px;font-size:15px;font-style:italic;color:var(--ink);border-left:2px solid var(--accent);padding-left:14px;line-height:1.5}
+.outcomes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
+.oc{border:1px solid var(--edge-soft);border-radius:12px;padding:16px;background:color-mix(in oklab,var(--panel-2) 55%,transparent)}
+.oc .ov{font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+.oc .ol{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.4}
+.note-fill{font-family:'Instrument Sans';font-size:11px;color:var(--ink-faint);margin-top:8px;display:flex;gap:7px;align-items:center}
+.note-fill::before{content:"›";color:var(--accent);font-size:14px}
+
+/* gallery grids */
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.gal image-slot{width:100%;aspect-ratio:4/5;display:block;border-radius:11px;border:1px solid var(--edge-soft)}
+.gal.sq image-slot{aspect-ratio:1/1}
+.dotb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+.exp{border:1px solid var(--edge-soft);border-radius:13px;overflow:hidden;background:color-mix(in oklab,var(--panel) 52%,transparent);transition:transform .3s var(--ease-back),box-shadow .3s;cursor:default}
+.exp:hover{transform:translateY(-4px) rotate(-.6deg);box-shadow:0 16px 30px -16px var(--shadow)}
+.exp image-slot{width:100%;aspect-ratio:1/1;display:block}
+.exp .ex-cap{padding:11px 13px}
+.exp h6{font-size:13.5px;font-weight:700}
+.exp .ex-tag{font-family:'Instrument Sans';font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+
+/* guest book */
+.gb-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:100%}
+.gb-form{padding:26px 26px 30px;border-right:1px solid var(--edge-soft);background:color-mix(in oklab,var(--panel-2) 50%,transparent);display:flex;flex-direction:column}
+.gb-form h3{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px}
+.gb-form .gb-int{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:18px}
+.gb-field{margin-bottom:14px}
+.gb-field label{display:block;font-family:'Instrument Sans';font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px}
+.gb-field input,.gb-field textarea{
+  width:100%;font-family:inherit;font-size:14px;color:var(--ink);
+  background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:11px 13px;outline:none;
+  transition:border-color .2s,box-shadow .2s;resize:none;
+}
+.gb-field input:focus,.gb-field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 16%,transparent)}
+.swatches{display:flex;gap:9px;flex-wrap:wrap}
+.sw{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .18s var(--ease-back);position:relative}
+.sw:hover{transform:scale(1.14)}
+.sw.on{border-color:var(--ink)}
+.sw.on::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--ink);opacity:.4}
+.gb-sign{margin-top:auto;padding-top:16px}
+.gb-btn{width:100%;height:46px;border:none;border-radius:11px;background:var(--accent);color:var(--on-accent);
+  font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:.01em;
+  transition:transform .2s var(--ease-back),background .2s,box-shadow .2s;box-shadow:0 10px 22px -12px var(--accent)}
+.gb-btn:hover{transform:translateY(-2px);background:var(--accent-deep)}
+.gb-btn:active{transform:translateY(0)}
+.gb-board{padding:22px 24px;overflow-y:auto}
+.gb-board-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.gb-board-head .gb-count{font-family:'Instrument Sans';font-size:12px;color:var(--ink-soft)}
+.gb-board-head .gb-count b{color:var(--accent)}
+.sigs{columns:2;column-gap:14px}
+.sig{break-inside:avoid;margin-bottom:14px;border:1px solid var(--edge-soft);border-radius:12px;padding:13px 15px;background:color-mix(in oklab,var(--panel) 55%,transparent);
+  border-left:4px solid var(--sig,var(--accent));animation:sigin .4s var(--ease-back)}
+@keyframes sigin{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.sig .sig-top{display:flex;align-items:center;gap:8px}
+.sig .sig-dot{width:11px;height:11px;border-radius:50%;background:var(--sig,var(--accent));flex:0 0 11px}
+.sig .sig-name{font-size:14px;font-weight:700}
+.sig .sig-msg{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-top:6px}
+.sig .sig-date{font-family:'Instrument Sans';font-size:10px;color:var(--ink-faint);margin-top:7px;letter-spacing:.04em}
+
+/* resume window */
+.res-wrap{padding:26px 30px 30px}
+.res-actions{display:flex;gap:10px;margin-top:18px}
+.res-btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:11px;
+  font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none;border:1px solid var(--edge);color:var(--ink);
+  transition:transform .2s var(--ease-back),border-color .2s,background .2s}
+.res-btn:hover{transform:translateY(-2px);border-color:var(--accent)}
+.res-btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.res-list{margin-top:18px;display:flex;flex-direction:column}
+.res-job{display:grid;grid-template-columns:1fr auto;gap:6px 16px;padding:16px 0;border-top:1px solid var(--edge-soft)}
+.res-job h5{font-size:16px;font-weight:700}
+.res-job .rc{font-size:13px;color:var(--accent);font-weight:600;margin-top:2px}
+.res-job .rd{font-family:'Instrument Sans';font-size:11px;color:var(--ink-faint);text-align:right;white-space:nowrap}
+.res-job p{grid-column:1/-1;font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin-top:6px;max-width:64ch}
+
+/* about window */
+.about-wrap{padding:0}
+.about-hero{position:relative;padding:0;display:block;
+  background:linear-gradient(150deg,color-mix(in oklab,var(--accent) 13%,var(--panel)),var(--panel));
+  border-bottom:1px solid var(--edge-soft)}
+.about-portrait{width:100%;aspect-ratio:1/1;overflow:hidden;border-bottom:1px solid var(--edge-soft)}
+.about-portrait image-slot{width:100%;height:100%;display:block}
+.about-intro{padding:24px 32px 24px}
+.about-intro .hi{font-family:'Instrument Sans';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.about-intro h2{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.02;margin:4px 0 8px}
+.about-intro p{font-size:14.5px;color:var(--ink-soft);line-height:1.55;max-width:46ch}
+.about-body{padding:24px 32px 30px}
+.about-thesis{font-size:19px;font-weight:600;line-height:1.5;letter-spacing:-.01em}
+.about-thesis b{color:var(--accent);font-weight:700}
+.about-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:22px}
+.about-facts .f{border:1px solid var(--edge-soft);border-radius:13px;padding:15px 16px;background:var(--panel-2)}
+.about-facts .fv{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.02em;line-height:1}
+.about-facts .fl{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.35}
+.about-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+
+@media (max-width:880px){
+  .hint{display:none}
+  .proj-card{grid-template-columns:1fr;gap:18px}
+  .gb-wrap{grid-template-columns:1fr}
+  .outcomes{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body data-theme="studio">
+
+<div id="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+<div id="desk"></div>
+
+<!-- ===== floating glass menu pills ===== -->
+<div class="menubar">
+  <div class="mb-pill mb-left">
+    <span class="mb-mark"><span class="dot"></span>Theresa Kong</span>
+    <span class="mb-sep"></span>
+    <span class="mb-status mono">Product Designer · Curious by default</span>
+  </div>
+  <div class="mb-pill mb-right">
+    <a class="mb-link" href="https://www.linkedin.com/in/theresa-kong/" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="mb-link" href="mailto:hello@theresakong.com">Email</a>
+    <span class="mb-sep"></span>
+    <span class="mb-clock mono" id="clock">—</span>
+  </div>
+</div>
+
+<!-- ===== desktop ===== -->
+<div class="layer" id="iconLayer">
+
+  <!-- sticky: bio -->
+  <div class="icon sticky yellow" id="sticky-bio" style="left:48px;top:96px" data-noopen>
+    <div class="pad">
+      <span class="pin"></span>
+      <h3>Hi, I'm Theresa.</h3>
+      <p>A product designer with 6+ years turning tangled, multi-sided problems into clear, humane systems — most recently 0→1 work at TourHero.</p>
+    </div>
+  </div>
+
+  <!-- sticky: ethos -->
+  <div class="icon sticky paper" id="sticky-ethos" style="left:104px;top:352px" data-noopen>
+    <div class="pad">
+      <h3>How I think</h3>
+      <p>Map the flow first. Make the invisible logic visible. Break big ideas into small, surprising pieces people instantly get.</p>
+    </div>
+  </div>
+
+  <!-- folders -->
+  <div class="icon folder" id="ic-work" data-open="work" data-screen-label="Work" style="left:548px;top:120px">
+    <div class="art">
+      <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#c9d8ec,#9fbbdd)"><i class="ph"></i></span>
+      <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f1bca9,#dd8e76)"><i class="ph"></i></span>
+      <span class="fcard fc-front tint" style="--tint:linear-gradient(150deg,#f4cdbd,#e7a98f)"><i class="ph"></i></span>
+    </div>
+    <div class="label">Work</div>
+    <div class="count">5 items</div>
+  </div>
+
+  <div class="icon folder" id="ic-photo" data-open="photo" data-screen-label="Photography" style="left:734px;top:120px">
+    <div class="art">
+      <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#d0d4dc,#9aa1ad)"><i class="ph"></i></span>
+      <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#e9cdae,#c59b71)"><i class="ph"></i></span>
+      <span class="fcard fc-front tint" style="--tint:linear-gradient(150deg,#dfe3ea,#b9c0cc)"><i class="ph"></i></span>
+    </div>
+    <div class="label">Photography</div>
+    <div class="count">12 items</div>
+  </div>
+
+  <div class="icon folder" id="ic-dotb" data-open="dotb" data-screen-label="Do Outside the Box" style="left:920px;top:120px">
+    <div class="art">
+      <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#bfe3c9,#8cc89e)"><i class="ph"></i></span>
+      <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f6d79a,#e9aa4d)"><i class="ph"></i></span>
+      <span class="fcard fc-front tint" style="--tint:linear-gradient(150deg,#cfead6,#a6d3b2)"><i class="ph"></i></span>
+    </div>
+    <div class="label wrap">Do Outside the Box</div>
+    <div class="count">6 items</div>
+  </div>
+
+  <!-- apps -->
+  <div class="icon single" id="ic-about" data-open="about" data-screen-label="About" style="left:96px;top:612px">
+    <div class="art"><span class="scard portrait"><i class="ph"></i></span></div>
+    <div class="label">About</div>
+    <div class="count">Theresa Kong</div>
+  </div>
+
+  <div class="icon single" id="ic-gb" data-open="guestbook" data-screen-label="Guest Book" style="left:548px;top:382px">
+    <div class="art"><span class="scard guest">
+      <svg viewBox="0 0 60 60" width="56" height="56" fill="none">
+        <path d="M15 12.5C15 11 16.2 10 17.6 10H43.4C44.8 10 46 11 46 12.5V47.5C46 49 44.8 50 43.4 50H17.6C16.2 50 15 49 15 47.5Z" stroke="#fff" stroke-width="3"/>
+        <path d="M22 22H39M22 30H39M22 38H32" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M38 38.5L43 33.5L46.5 37L41.5 42H38Z" fill="#fff"/>
+      </svg>
+    </span></div>
+    <div class="label">Guest Book</div>
+    <div class="count accent">Leave your color</div>
+  </div>
+
+  <div class="icon single" id="ic-res" data-open="resume" data-screen-label="Résumé" style="left:734px;top:382px">
+    <div class="art"><span class="scard paper">
+      <svg viewBox="0 0 60 60" width="54" height="54" fill="none">
+        <path d="M18 9H35L45 19V49C45 50.7 43.7 52 42 52H18C16.3 52 15 50.7 15 49V12C15 10.3 16.3 9 18 9Z" stroke="#c0564f" stroke-width="3"/>
+        <path d="M34 9.5V20H44.5" stroke="#c0564f" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M22 31H38M22 39H38M22 23H28" stroke="#c0564f" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </span></div>
+    <div class="label">resume.pdf</div>
+    <div class="count">PDF · 1 page</div>
+  </div>
+
+</div>
+
+<!-- window host -->
+<div id="winHost"></div>
+
+<!-- hint -->
+<div class="hint" id="hint"><span class="k mono">drag</span> the notes · <span class="k mono">click</span> a folder to open · <span class="k mono">drop</span> photos inside a folder to set its cover</div>
+
+<!-- ============ WINDOW CONTENT TEMPLATES ============ -->
+
+<template id="tmpl-about">
+  <div class="about-wrap">
+    <div class="about-hero">
+      <div class="about-portrait"><image-slot id="about-photo" placeholder="Drop a portrait"></image-slot></div>
+      <div class="about-intro">
+        <span class="hi mono">Hello · New York, NY</span>
+        <h2>Theresa Kong</h2>
+        <p>Senior Product Designer working at the seams of multi-sided products — where strategy, systems, and a little play meet.</p>
+      </div>
+    </div>
+    <div class="about-body">
+      <p class="about-thesis">I take tangled, multi-sided problems and make their logic <b>visible</b> — mapping the flow first, then breaking big ideas into small, surprising pieces people <b>instantly get</b>.</p>
+      <div class="about-facts">
+        <div class="f"><div class="fv">6+ yrs</div><div class="fl">designing 0→1 products &amp; systems</div></div>
+        <div class="f"><div class="fv">3-sided</div><div class="fl">marketplace architecture at TourHero</div></div>
+        <div class="f"><div class="fv">End-to-end</div><div class="fl">research → IA → prototype → ship</div></div>
+      </div>
+      <div class="about-links">
+        <a class="res-btn primary" href="https://www.linkedin.com/in/theresa-kong/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a class="res-btn" href="mailto:hello@theresakong.com">hello@theresakong.com</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tmpl-work">
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Selected Work</span>
+      <h2 class="wtitle">Things I've designed</h2>
+      <p class="wsub">Multi-sided products, 0→1 launches, and the messy middle in between. Click any project to open the full story — research, decisions, and what changed.</p>
+    </div>
+    <div class="work-grid">
+      <div class="proj-card" data-open="proj-tourhero">
+        <div class="proj-thumb"><div class="thumb-deck">
+          <image-slot class="front" id="th-tourhero" radius="14" placeholder="Cover"></image-slot>
+        </div></div>
+        <div class="proj-meta">
+          <div class="pc-top"><h4>TourHero <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
+          <div class="proj-tags">
+            <span class="tag">3-sided marketplace</span>
+            <span class="tag">0→1 architecture</span>
+            <span class="tag">AI-assisted planning</span>
+            <span class="tag">Design systems</span>
+          </div>
+        </div>
+      </div>
+      <div class="proj-card" data-open="proj-errunds">
+        <div class="proj-thumb"><div class="thumb-deck">
+          <image-slot class="front" id="th-errunds" radius="14" placeholder="Cover"></image-slot>
+        </div></div>
+        <div class="proj-meta">
+          <div class="pc-top"><h4>Errunds <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
+          <div class="proj-tags">
+            <span class="tag">Information architecture</span>
+            <span class="tag">Usability testing</span>
+            <span class="tag">Original iconography</span>
+            <span class="tag">MVP scoping</span>
+          </div>
+        </div>
+      </div>
+      <div class="proj-card" data-open="proj-figma">
+        <div class="proj-thumb"><div class="thumb-deck">
+          <image-slot class="front" id="th-figma" radius="14" placeholder="Cover"></image-slot>
+        </div></div>
+        <div class="proj-meta">
+          <div class="pc-top"><h4>Figma Plugin <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
+          <div class="proj-tags">
+            <span class="tag">0→1 tool</span>
+            <span class="tag">Workflow automation</span>
+            <span class="tag">Shipped &amp; adopted</span>
+          </div>
+        </div>
+      </div>
+      <div class="proj-card" data-open="proj-3dme">
+        <div class="proj-thumb"><div class="thumb-deck">
+          <image-slot class="front" id="th-3dme" radius="14" placeholder="Cover"></image-slot>
+        </div></div>
+        <div class="proj-meta">
+          <div class="pc-top"><h4>3D Me <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
+          <div class="proj-tags">
+            <span class="tag">Self-initiated</span>
+            <span class="tag">3D / Blender</span>
+            <span class="tag">Identity &amp; play</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note-fill mono">Drop your real cover images onto the cards — they'll stick.</p>
+  </div>
+</template>
+
+<template id="tmpl-proj-tourhero">
+  <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
+  <div class="case-hero"><image-slot id="hero-tourhero" placeholder="Drop a TourHero hero image"></image-slot></div>
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Case · 0→1 Marketplace</span>
+      <h2 class="wtitle">TourHero</h2>
+      <p class="wsub">A three-sided travel marketplace where travelers find trips, local "TourHeroes" lead them, and operators run them. I directed the end-to-end design architecture connecting all three.</p>
+    </div>
+    <div class="meta-row">
+      <span class="chip mono">Senior Product Designer</span>
+      <span class="chip mono">Sep 2025 – Mar 2026</span>
+      <span class="chip hi mono">3-sided marketplace</span>
+      <span class="chip hi mono">AI-assisted planning</span>
+    </div>
+    <div class="spine">
+      <div class="step"><div class="sidx mono">EMPATHIZE<span class="n">01</span></div><div>
+        <h5>Three users, three truths</h5>
+        <p>A marketplace only works when every side wins. I mapped the jobs of travelers (discover & trust), TourHeroes (lead & earn), and operators (fill & manage) — and found where their incentives quietly collided.</p>
+        <div class="sshot"><image-slot id="ts-tourhero-1" placeholder="User flow / research artifact"></image-slot></div>
+        <p class="note-fill mono">Replace with your real flow maps or research synthesis.</p>
+      </div></div>
+      <div class="step"><div class="sidx mono">DEFINE<span class="n">02</span></div><div>
+        <h5>The real problem wasn't the trip — it was the handoff</h5>
+        <p>Planning fell apart in the gaps between sides. I reframed the work around a single connective spine so a trip could move from idea → booked → led without anyone losing the thread.</p>
+        <p class="quote">"Design the seams, not just the screens."</p>
+      </div></div>
+      <div class="step"><div class="sidx mono">IDEATE<span class="n">03</span></div><div>
+        <h5>AI as a planning co-pilot, not a gimmick</h5>
+        <p>I prototyped where AI genuinely removed toil — drafting itineraries, matching travelers to the right hosts — while keeping humans in control of the moments that build trust.</p>
+        <div class="sshot"><image-slot id="ts-tourhero-2" placeholder="Concepts / wireframes"></image-slot></div>
+      </div></div>
+      <div class="step"><div class="sidx mono">SHIP<span class="n">04</span></div><div>
+        <h5>One system, three doors</h5>
+        <p>The final architecture gave each side its own tailored surface on top of shared primitives — consistent, scalable, and fast to extend as the marketplace grew.</p>
+        <div class="sshot"><image-slot id="ts-tourhero-3" placeholder="Final hi-fi screens"></image-slot></div>
+      </div></div>
+    </div>
+    <div class="outcomes">
+      <div class="oc"><div class="ov">3-sided</div><div class="ol">unified into one design system</div></div>
+      <div class="oc"><div class="ov">0→1</div><div class="ol">core flows defined end-to-end</div></div>
+      <div class="oc"><div class="ov">AI</div><div class="ol">embedded in trip planning</div></div>
+    </div>
+    <p class="note-fill mono">Swap these for your real metrics when you're ready.</p>
+  </div>
+</template>
+
+<template id="tmpl-proj-errunds">
+  <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
+  <div class="case-hero"><image-slot id="hero-errunds" placeholder="Drop an Errunds hero image"></image-slot></div>
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Case · Discovery & IA</span>
+      <h2 class="wtitle">Errunds</h2>
+      <p class="wsub">Bodegas have almost everything, yet they're somehow forgotten. Errunds helps New Yorkers rediscover their local brick-and-mortar shops and actually find what they need inside.</p>
+    </div>
+    <div class="meta-row">
+      <span class="chip mono">Product Designer</span>
+      <span class="chip mono">2021</span>
+      <span class="chip hi mono">Information architecture</span>
+      <span class="chip hi mono">Usability testing</span>
+    </div>
+    <div class="spine">
+      <div class="step"><div class="sidx mono">EMPATHIZE<span class="n">01</span></div><div>
+        <h5>Five shoppers, one frustration</h5>
+        <p>We interviewed 5 bodega regulars to understand habits, pain points, and motivations. The pattern: people love bodegas but waste time hunting for items with no logic to where things live.</p>
+      </div></div>
+      <div class="step"><div class="sidx mono">DEFINE<span class="n">02</span></div><div>
+        <h5>How might we…</h5>
+        <p class="quote">How might we enhance in-store shopping by helping people quickly find what they're looking for in their local brick-and-mortar shops?</p>
+      </div></div>
+      <div class="step"><div class="sidx mono">IDEATE<span class="n">03</span></div><div>
+        <h5>Business vs. user needs — and how we balanced them</h5>
+        <p>Owners wanted standout features; users just wanted to find things fast. I brought in developers to pressure-test feasibility, and we agreed to a lean MVP focused on findability — advanced features deferred to V2.</p>
+        <div class="sshot"><image-slot id="es-errunds-1" placeholder="Persona / value prop canvas"></image-slot></div>
+      </div></div>
+      <div class="step"><div class="sidx mono">PROTOTYPE<span class="n">04</span></div><div>
+        <h5>Shelves as information architecture</h5>
+        <p>A bodega holds thousands of items. I mimicked the physical store — aisle categories at the top — and organized everything into a tree hierarchy, validated with tree-jack testing. I also designed the original iconography by hand.</p>
+        <div class="sshot"><image-slot id="es-errunds-2" placeholder="IA / icon system / screens"></image-slot></div>
+      </div></div>
+      <div class="step"><div class="sidx mono">TEST<span class="n">05</span></div><div>
+        <h5>Tested before launch</h5>
+        <p>Using Maze, I ran unmoderated usability testing with 15 users to evaluate the design before the product even shipped — closing the loop between assumptions and evidence.</p>
+      </div></div>
+    </div>
+    <div class="outcomes">
+      <div class="oc"><div class="ov">15</div><div class="ol">users in unmoderated testing</div></div>
+      <div class="oc"><div class="ov">Tree</div><div class="ol">IA validated via tree-jack</div></div>
+      <div class="oc"><div class="ov">Original</div><div class="ol">iconography designed by me</div></div>
+    </div>
+  </div>
+</template>
+
+<template id="tmpl-proj-figma">
+  <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
+  <div class="case-hero"><image-slot id="hero-figma" placeholder="Drop a cover image"></image-slot></div>
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Case · Tool · Maker</span>
+      <h2 class="wtitle">Figma Plugin</h2>
+      <p class="wsub">I kept hitting the same repetitive step in my own workflow — so I designed and shipped a small plugin to remove it, then watched other designers adopt it too.</p>
+    </div>
+    <div class="meta-row"><span class="chip mono">Designer · Maker</span><span class="chip mono">2022</span><span class="chip hi mono">0→1 tool</span></div>
+    <div class="spine">
+      <div class="step"><div class="sidx mono">PROBLEM<span class="n">01</span></div><div><h5>A papercut worth fixing</h5><p>Small frictions compound. I treated my own annoyance as a design brief and scoped the smallest tool that would meaningfully save time.</p></div></div>
+      <div class="step"><div class="sidx mono">BUILD<span class="n">02</span></div><div><h5>Designed and shipped</h5><p>From concept to a published, usable plugin — owning the full loop from interface to release.</p><div class="sshot"><image-slot id="fs-figma-1" placeholder="Plugin UI / before-after"></image-slot></div></div></div>
+    </div>
+    <p class="note-fill mono">Tell me the real plugin and I'll write this case properly.</p>
+  </div>
+</template>
+
+<template id="tmpl-proj-3dme">
+  <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
+  <div class="case-hero"><image-slot id="hero-3dme" placeholder="Drop a cover image"></image-slot></div>
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Concept · 3D · Play</span>
+      <h2 class="wtitle">3D Me</h2>
+      <p class="wsub">An experiment in self-representation — modeling identity in three dimensions, mixing illustration, motion, and curiosity.</p>
+    </div>
+    <div class="meta-row"><span class="chip mono">Concept · 3D</span><span class="chip mono">2021</span><span class="chip hi mono">Self-initiated</span></div>
+    <div class="spine">
+      <div class="step"><div class="sidx mono">WHY<span class="n">01</span></div><div><h5>What does "me" look like in 3D?</h5><p>A personal exploration of how identity, craft, and play can live in one object.</p><div class="sshot"><image-slot id="ms-3dme-1" placeholder="3D renders"></image-slot></div></div></div>
+    </div>
+    <p class="note-fill mono">Drop your 3D renders here.</p>
+  </div>
+</template>
+
+<template id="tmpl-photo">
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Photography</span>
+      <h2 class="wtitle">Another lens</h2>
+      <p class="wsub">When I'm not designing screens, I'm framing the world through a viewfinder. Same instinct — notice the overlooked, compose with intention.</p>
+    </div>
+    <div class="gal">
+      <image-slot id="ph-1" placeholder="Photo"></image-slot>
+      <image-slot id="ph-2" placeholder="Photo"></image-slot>
+      <image-slot id="ph-3" placeholder="Photo"></image-slot>
+      <image-slot id="ph-4" placeholder="Photo"></image-slot>
+      <image-slot id="ph-5" placeholder="Photo"></image-slot>
+      <image-slot id="ph-6" placeholder="Photo"></image-slot>
+    </div>
+    <p class="note-fill mono">Drag your photos straight onto any frame — they persist.</p>
+  </div>
+</template>
+
+<template id="tmpl-dotb">
+  <div class="pad-l">
+    <div class="wlead">
+      <span class="wkicker mono">Do Outside the Box</span>
+      <h2 class="wtitle">Don't just think outside the box. Do it.</h2>
+      <p class="wsub">Small experiments to stay curious — 3D, illustration, microinteractions, logos. Proof that I break the rules on purpose.</p>
+    </div>
+    <div class="dotb-grid">
+      <div class="exp"><image-slot id="d-1" placeholder="3D Donut"></image-slot><div class="ex-cap"><h6>3D Donut</h6><div class="ex-tag mono">Blender</div></div></div>
+      <div class="exp"><image-slot id="d-2" placeholder="3D Sushi"></image-slot><div class="ex-cap"><h6>3D Sushi</h6><div class="ex-tag mono">Blender</div></div></div>
+      <div class="exp"><image-slot id="d-3" placeholder="Rainbow Stairs"></image-slot><div class="ex-cap"><h6>Rainbow Stairs</h6><div class="ex-tag mono">3D</div></div></div>
+      <div class="exp"><image-slot id="d-4" placeholder="Red Pigeon Logo"></image-slot><div class="ex-cap"><h6>Red Pigeon</h6><div class="ex-tag mono">Logo</div></div></div>
+      <div class="exp"><image-slot id="d-5" placeholder="Burrito Illustration"></image-slot><div class="ex-cap"><h6>Burrito Wrap</h6><div class="ex-tag mono">Illustration</div></div></div>
+      <div class="exp"><image-slot id="d-6" placeholder="Microinteraction"></image-slot><div class="ex-cap"><h6>Heart Microinteraction</h6><div class="ex-tag mono">Figma</div></div></div>
+    </div>
+  </div>
+</template>
+
+<template id="tmpl-guestbook">
+  <div class="gb-wrap">
+    <div class="gb-form">
+      <h3>Sign the book</h3>
+      <p class="gb-int">Every visitor leaves a color. Pick yours, add a note, and you become part of the wall — for the next person who wanders in.</p>
+      <div class="gb-field">
+        <label>Your name</label>
+        <input id="gb-name" type="text" maxlength="28" placeholder="e.g. Alex from Figma" autocomplete="off">
+      </div>
+      <div class="gb-field">
+        <label>A note (optional)</label>
+        <textarea id="gb-msg" rows="3" maxlength="120" placeholder="Say hi, leave a thought…"></textarea>
+      </div>
+      <div class="gb-field">
+        <label>Your color</label>
+        <div class="swatches" id="gb-swatches"></div>
+      </div>
+      <div class="gb-sign">
+        <button class="gb-btn" id="gb-submit">Leave my mark ✶</button>
+      </div>
+    </div>
+    <div class="gb-board">
+      <div class="gb-board-head">
+        <h2 class="wtitle" style="font-size:22px">The wall</h2>
+        <span class="gb-count mono"><b id="gb-n">0</b> marks left</span>
+      </div>
+      <div class="sigs" id="gb-sigs"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tmpl-resume">
+  <div class="res-wrap">
+    <div class="wlead">
+      <span class="wkicker mono">resume.pdf</span>
+      <h2 class="wtitle">Theresa Kong</h2>
+      <p class="wsub">Product Designer · New York, NY · 6+ years across 0→1 marketplaces, AI tools, and consumer apps.</p>
+    </div>
+    <div class="res-actions">
+      <a class="res-btn primary" href="desktop/Theresa_Kong_Resume.pdf" target="_blank" rel="noopener">Open PDF ↗</a>
+      <a class="res-btn" href="desktop/Theresa_Kong_Resume.pdf" download>Download</a>
+      <a class="res-btn" href="mailto:hello@theresakong.com">hello@theresakong.com</a>
+    </div>
+    <div class="res-list">
+      <div class="res-job">
+        <div><h5>Senior Product Designer</h5><div class="rc">TourHero</div></div>
+        <div class="rd mono">Sep 2025 – Mar 2026</div>
+        <p>Directed end-to-end design architecture for a three-sided travel marketplace, embedding AI into the trip-planning experience.</p>
+      </div>
+      <div class="res-job">
+        <div><h5>Product Designer</h5><div class="rc">Earlier work</div></div>
+        <div class="rd mono">2019 – 2025</div>
+        <p>0→1 consumer and marketplace products — research, IA, prototyping, usability testing, and hand-built design systems & iconography.</p>
+      </div>
+    </div>
+    <p class="note-fill mono">This is a summary — the PDF has the full, accurate history. Tell me corrections and I'll match it exactly.</p>
+  </div>
+</template>
+
+<script src="./image-slot.js"></script>
+<script src="desktop/os.js"></script>
+</body>
+</html>

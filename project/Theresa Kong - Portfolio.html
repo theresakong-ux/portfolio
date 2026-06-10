@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theresa Kong — Senior Product Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ----------  PALETTE SYSTEM (60:30:10, red = the 10%)  ---------- */
+  :root{
+    /* default = "Conservatory": porcelain · pine · coral */
+    --c60:#f1ede3;        /* 60% — base surface           */
+    --c30:#1e3a30;        /* 30% — deep anchor            */
+    --c10:#d35555;        /* 10% — the accent (your red)  */
+    --ink:#1b2520;        /* primary text on light        */
+    --ink-soft:#5f6b63;   /* secondary text on light      */
+    --ink-faint:#a9b0a8;  /* hairline / tertiary          */
+    --on-deep:#ece6d7;    /* text on the deep anchor      */
+    --on-deep-soft:#9fb0a4;
+    --line:color-mix(in oklab, var(--ink) 14%, transparent);
+    --line-deep:color-mix(in oklab, var(--on-deep) 16%, transparent);
+    --card:color-mix(in oklab, var(--c60) 60%, #ffffff);
+    --sans:'Hanken Grotesk',system-ui,sans-serif;
+    --mono:'Spline Sans Mono',ui-monospace,monospace;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--c60);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    transition:background .6s var(--ease),color .6s var(--ease);
+  }
+  @media (hover:hover){body{cursor:none}}
+  ::selection{background:var(--c10);color:#fff}
+  a{color:inherit;text-decoration:none}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 48px}
+  .mono{font-family:var(--mono)}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:14px}
+  .eyebrow::before{content:"";width:42px;height:1px;background:var(--ink-faint)}
+
+  /* ----------  custom cursor  ---------- */
+  #cursor{position:fixed;z-index:200;left:0;top:0;width:12px;height:12px;border-radius:50%;
+    border:1.5px solid var(--ink);transform:translate(-50%,-50%);pointer-events:none;
+    transition:width .2s,height .2s,background .2s,border-color .2s,opacity .2s;mix-blend-mode:normal}
+  #cursor.hot{width:42px;height:42px;background:color-mix(in oklab,var(--c10) 14%,transparent);border-color:var(--c10)}
+  #cursor.on-deep{border-color:var(--on-deep)}
+  #cursor.label{width:60px;height:60px;background:var(--c10);border-color:var(--c10)}
+  #cursor .ctxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:#fff;text-transform:uppercase;
+    opacity:0;transition:opacity .2s}
+  #cursor.label .ctxt{opacity:1}
+  @media (hover:none){#cursor{display:none}body{cursor:auto}}
+
+  /* ----------  top nav  ---------- */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:120;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:22px 48px;font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--ink-soft);
+    transition:color .6s var(--ease)}
+  .nav.deep{color:var(--on-deep-soft)}
+  .nav .brand{display:flex;align-items:center;gap:10px;color:var(--ink);transition:color .6s var(--ease)}
+  .nav.deep .brand{color:var(--on-deep)}
+  /* subtle halo keeps text legible on any mid-transition bg */
+  .nav .brand,.nav .links a,.nav .avail{
+    text-shadow:0 0 20px color-mix(in oklab,var(--c60) 36%,transparent)}
+  .nav.deep .brand,.nav.deep .links a,.nav.deep .avail{
+    text-shadow:0 0 20px color-mix(in oklab,var(--c30) 36%,transparent)}
+  .nav .brand b{font-weight:600;letter-spacing:.02em}
+  .star{width:13px;height:13px;color:var(--c10)}
+  .nav .links{display:flex;gap:28px;align-items:center}
+  .nav .links a{position:relative;transition:color .2s}
+  .nav .links a:hover{color:var(--c10)}
+  .nav .avail{display:flex;align-items:center;gap:8px}
+  .pdot{width:6px;height:6px;border-radius:50%;background:var(--c10);box-shadow:0 0 0 3px color-mix(in oklab,var(--c10) 22%,transparent)}
+
+  /* clean frosted-glass nav — single blur, mask fades to transparent at bottom */
+  .navblur{position:fixed;top:0;left:0;right:0;height:82px;z-index:110;pointer-events:none;
+    opacity:0;transition:opacity .4s var(--ease)}
+  .navblur.on{opacity:1}
+  .navblur .blur-layer{position:absolute;inset:0;
+    backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,#000 36%,transparent 92%);
+    mask:linear-gradient(to bottom,#000 0%,#000 36%,transparent 92%)}
+  .navblur .tint{position:absolute;inset:0;transition:background .55s var(--ease);
+    background:linear-gradient(to bottom,color-mix(in oklab,var(--c60) 15%,transparent) 0%,transparent 60%)}
+  .navblur.deep .tint{background:linear-gradient(to bottom,color-mix(in oklab,var(--c30) 15%,transparent) 0%,transparent 60%)}
+  /* dummy rule to keep .gl selector from matching new markup */
+  .navblur .gl{display:none}
+  .navblur .gl:nth-child(1){backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,#000 45%,transparent 82%);mask:linear-gradient(to bottom,#000 0%,#000 45%,transparent 82%)}
+  .navblur .gl:nth-child(2){backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,#000 32%,transparent 64%);mask:linear-gradient(to bottom,#000 0%,#000 32%,transparent 64%)}
+  .navblur .gl:nth-child(3){backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,#000 20%,transparent 48%);mask:linear-gradient(to bottom,#000 0%,#000 20%,transparent 48%)}
+  .navblur .gl:nth-child(4){backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,#000 8%,transparent 34%);mask:linear-gradient(to bottom,#000 0%,#000 8%,transparent 34%)}
+  .navblur .gl:nth-child(5){backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    -webkit-mask:linear-gradient(to bottom,#000 0%,transparent 22%);mask:linear-gradient(to bottom,#000 0%,transparent 22%)}
+  .navblur .tint{position:absolute;inset:0;transition:background .6s var(--ease);
+    background:linear-gradient(to bottom,color-mix(in oklab,var(--c60) 58%,transparent) 0%,
+      color-mix(in oklab,var(--c60) 18%,transparent) 42%,transparent 74%)}
+  .navblur.deep .tint{background:linear-gradient(to bottom,color-mix(in oklab,var(--c30) 62%,transparent) 0%,
+      color-mix(in oklab,var(--c30) 18%,transparent) 42%,transparent 74%)}
+
+  /* ==========  HERO  ========== */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;
+    justify-content:center;overflow:hidden}
+  #constellation{position:absolute;inset:0;z-index:0;pointer-events:none}
+  .hero .wrap{position:relative;z-index:2}
+  .hero .eyebrow{margin-bottom:34px}
+  h1.kin{font-size:clamp(48px,8.2vw,116px);line-height:.92;letter-spacing:-.04em;font-weight:600;
+    max-width:13ch}
+  h1.kin .line{display:inline-block;white-space:nowrap}
+  h1.kin .ltr{display:inline-block;will-change:transform}
+  h1.kin .accent{color:var(--c10);font-style:italic}
+  .hero .lede{margin-top:32px;max-width:540px;font-size:clamp(17px,1.5vw,21px);line-height:1.5;
+    color:var(--ink-soft);font-weight:400}
+  .hero .lede b{color:var(--ink);font-weight:600}
+
+  /* catchable verbs */
+  .verbs{margin-top:46px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .verb{position:relative;font-family:var(--mono);font-size:13.5px;letter-spacing:.02em;
+    text-transform:uppercase;padding:13px 22px;border:1px solid var(--line);border-radius:40px;
+    background:var(--card);color:var(--ink);transition:all .25s var(--ease);overflow:hidden;
+    display:flex;align-items:center;gap:10px}
+  .verb .vd{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);transition:all .25s}
+  .verb:hover{border-color:var(--c10);color:#fff;background:var(--c10);transform:translateY(-2px);
+    box-shadow:0 14px 30px -14px color-mix(in oklab,var(--c10) 80%,transparent)}
+  .verb:hover .vd{background:#fff}
+  .verb.sel{border-color:var(--c10);background:var(--c10);color:#fff;
+    box-shadow:0 10px 24px -14px color-mix(in oklab,var(--c10) 80%,transparent)}
+  .verb.sel .vd{background:#fff}
+  .verb-reveal{max-width:560px;min-height:74px;margin-top:22px;font-size:16px;line-height:1.45;
+    color:var(--ink-soft);font-weight:420}
+  .verb-reveal.in{animation:vrise .22s var(--ease)}
+  @keyframes vrise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .verb-reveal b{color:var(--ink);font-weight:600}
+  .verb-reveal .vk{font-family:var(--mono);color:var(--c10);font-size:13px;letter-spacing:.04em;
+    text-transform:uppercase;margin-right:10px}
+
+  .scrollcue{position:absolute;bottom:30px;left:48px;z-index:2;font-family:var(--mono);font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:12px}
+  .scrollcue .bar{width:1px;height:34px;background:var(--ink-faint);position:relative;overflow:hidden}
+  .scrollcue .bar::after{content:"";position:absolute;left:0;top:-50%;width:100%;height:50%;background:var(--c10);
+    animation:scrolldn 1.8s var(--ease) infinite}
+  @keyframes scrolldn{0%{top:-50%}60%,100%{top:100%}}
+
+  /* ==========  SELECTED WORK  ========== */
+  .work{padding:130px 0 120px;position:relative}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px}
+  .sec-head h2{font-size:clamp(30px,3.4vw,46px);font-weight:600;letter-spacing:-.03em;line-height:1}
+  .sec-head .meta{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);text-align:right}
+  .legend{display:inline-flex;align-items:center;gap:8px;margin-top:8px}
+  .legend i{width:8px;height:8px;border-radius:50%;background:var(--c10)}
+
+  .case{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:center;
+    padding:60px 0;border-top:1px solid var(--line)}
+  .case:last-child{border-bottom:1px solid var(--line)}
+  .case.flip{grid-template-columns:1.15fr 1fr}
+  .case.flip .case-info{order:2}
+  .case-num{font-family:var(--mono);font-size:13px;color:var(--c10);letter-spacing:.06em;margin-bottom:20px}
+  .case h3{font-size:clamp(26px,2.6vw,38px);font-weight:600;letter-spacing:-.02em;line-height:1.04}
+  .case .desc{margin-top:18px;font-size:17.5px;line-height:1.55;color:var(--ink-soft);max-width:42ch}
+  .case .desc b{color:var(--ink);font-weight:600}
+  .tags{margin-top:24px;display:flex;gap:9px;flex-wrap:wrap}
+  .tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
+    padding:8px 14px;border-radius:30px;border:1px solid var(--line);color:var(--ink-soft);
+    background:transparent;transition:all .2s;user-select:none}
+  .tag:hover{border-color:var(--c10);color:var(--c10)}
+  .tag.pinned{background:var(--ink);color:var(--c60);border-color:var(--ink)}
+  .impact{margin-top:30px;display:flex;align-items:center;gap:14px;
+    font-family:var(--mono);font-size:14px;color:var(--c10);font-weight:500;letter-spacing:.01em}
+  .impact .imp-dot{width:9px;height:9px;border-radius:50%;background:var(--c10);flex:0 0 auto;
+    box-shadow:0 0 0 4px color-mix(in oklab,var(--c10) 20%,transparent)}
+
+  /* browser-framed visual w/ guided steps */
+  .frame{position:relative;border-radius:16px;overflow:hidden;background:var(--card);
+    border:1px solid var(--line);box-shadow:0 30px 70px -40px rgba(20,30,25,.6)}
+  .frame .bar{height:42px;display:flex;align-items:center;gap:8px;padding:0 16px;
+    background:color-mix(in oklab,var(--c60) 50%,#fff);border-bottom:1px solid var(--line)}
+  .frame .bar i{width:11px;height:11px;border-radius:50%;background:var(--ink-faint)}
+  .frame .bar .url{margin-left:12px;flex:1;height:22px;border-radius:6px;background:var(--c60);
+    display:flex;align-items:center;padding:0 12px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .frame .stage{position:relative;aspect-ratio:16/10}
+  .frame image-slot{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .pin{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--c60);
+    border:1.5px solid var(--ink-faint);color:var(--ink);font-family:var(--mono);font-size:12px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;z-index:3;
+    transform:translate(-50%,-50%) scale(.9);transition:all .3s var(--ease);cursor:none;opacity:.55}
+  .pin.active{background:var(--c10);color:#fff;border-color:var(--c10);opacity:1;
+    transform:translate(-50%,-50%) scale(1.1);
+    box-shadow:0 0 0 6px color-mix(in oklab,var(--c10) 22%,transparent)}
+
+  .steps{margin-top:22px;display:flex;flex-direction:column;gap:2px}
+  .step{display:grid;grid-template-columns:26px 1fr;gap:14px;align-items:start;
+    padding:12px 14px;border-radius:12px;transition:background .25s;cursor:none}
+  .step:hover,.step.active{background:color-mix(in oklab,var(--ink) 5%,transparent)}
+  .step .sn{font-family:var(--mono);font-size:12px;color:var(--ink-faint);padding-top:2px;transition:color .25s}
+  .step.active .sn{color:var(--c10)}
+  .step .st{font-size:15.5px;line-height:1.4;color:var(--ink-soft)}
+  .step.active .st{color:var(--ink)}
+  .step .st b{color:var(--ink);font-weight:600;display:block;margin-bottom:1px}
+
+  /* flagship case on deep anchor */
+  .case.deep{background:var(--c30);color:var(--on-deep);border-radius:24px;border:0;
+    padding:64px;margin:18px 0;grid-template-columns:1fr 1.15fr}
+  .case.deep h3,.case.deep .step .st b{color:var(--on-deep)}
+  .case.deep .desc{color:var(--on-deep-soft)}.case.deep .desc b{color:var(--on-deep)}
+  .case.deep .case-num{color:var(--c10)}
+  .case.deep .tag{border-color:var(--line-deep);color:var(--on-deep-soft)}
+  .case.deep .tag:hover{border-color:var(--c10);color:#fff}
+  .case.deep .tag.pinned{background:var(--on-deep);color:var(--c30);border-color:var(--on-deep)}
+  .case.deep .step .st{color:var(--on-deep-soft)}
+  .case.deep .step:hover,.case.deep .step.active{background:color-mix(in oklab,var(--on-deep) 8%,transparent)}
+  .case.deep .step.active .st{color:var(--on-deep)}
+  .case.deep .frame{border-color:var(--line-deep);box-shadow:0 40px 90px -40px rgba(0,0,0,.6)}
+  .case.deep .frame .bar{background:color-mix(in oklab,var(--c30) 70%,#000);border-color:var(--line-deep)}
+  .case.deep .frame .bar .url{background:color-mix(in oklab,var(--c30) 60%,#000);color:var(--on-deep-soft)}
+  .case.deep .frame .stage{background:color-mix(in oklab,var(--c30) 80%,#000)}
+  .case.deep .pin{background:var(--c30);border-color:var(--on-deep-soft);color:var(--on-deep)}
+  .case.deep .step .sn{color:var(--on-deep-soft)}
+
+  /* ==========  TIMELINE (deep finale)  ========== */
+  .timeline{background:var(--c30);color:var(--on-deep);padding:120px 0 90px;position:relative;
+    transition:background .6s var(--ease)}
+  .timeline .eyebrow{color:var(--on-deep-soft)}.timeline .eyebrow::before{background:var(--on-deep-soft)}
+  .timeline .sec-head{margin-bottom:48px}
+  .timeline .sec-head h2{color:var(--on-deep)}
+  .timeline .sec-head .meta{color:var(--on-deep-soft)}
+
+  .era-stage{position:relative;min-height:360px;margin-bottom:54px}
+  .era{position:absolute;inset:0;display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center;
+    opacity:0;transform:translateY(18px);pointer-events:none;transition:opacity .5s var(--ease),transform .5s var(--ease)}
+  .era.show{opacity:1;transform:none;pointer-events:auto}
+  .era .yr{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--c10);margin-bottom:18px}
+  .era h3{font-size:clamp(28px,3vw,42px);font-weight:600;letter-spacing:-.02em;line-height:1.02}
+  .era .co{font-family:var(--mono);font-size:13px;color:var(--on-deep-soft);margin-top:10px;letter-spacing:.04em;text-transform:uppercase}
+  .era .moves{margin-top:26px;display:flex;flex-direction:column;gap:13px;max-width:46ch}
+  .era .moves li{list-style:none;display:flex;gap:13px;font-size:16.5px;line-height:1.45;color:var(--on-deep)}
+  .era .moves li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--on-deep-soft);margin-top:9px;flex:0 0 auto}
+  .era .imp{margin-top:30px;display:inline-flex;align-items:center;gap:12px;padding:12px 18px;
+    border:1px solid var(--c10);border-radius:40px;font-family:var(--mono);font-size:14px;color:var(--c10);font-weight:500}
+  .era .imp .imp-dot{width:9px;height:9px;border-radius:50%;background:var(--c10);box-shadow:0 0 0 4px color-mix(in oklab,var(--c10) 25%,transparent)}
+  .era .vis{position:relative}
+  .era .frame{border-color:var(--line-deep);box-shadow:0 40px 90px -40px rgba(0,0,0,.7)}
+  .era .frame .bar{background:color-mix(in oklab,var(--c30) 70%,#000);border-color:var(--line-deep)}
+  .era .frame .bar .url{background:color-mix(in oklab,var(--c30) 60%,#000);color:var(--on-deep-soft)}
+  .era .frame .stage{aspect-ratio:16/11;background:color-mix(in oklab,var(--c30) 80%,#000)}
+
+  /* the scrubbable track */
+  .track{position:relative;padding-top:30px;border-top:1px solid var(--line-deep)}
+  .track .rail{position:relative;height:3px;background:color-mix(in oklab,var(--on-deep) 18%,transparent);border-radius:3px;margin:34px 0 16px}
+  .track .prog{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--c10);transition:width .5s var(--ease)}
+  .track .node{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+    background:var(--c30);border:2px solid var(--on-deep-soft);cursor:none;transition:all .3s var(--ease);z-index:2}
+  .track .node:hover{border-color:var(--on-deep)}
+  .track .node.on{background:var(--c10);border-color:var(--c10);width:20px;height:20px;
+    box-shadow:0 0 0 6px color-mix(in oklab,var(--c10) 22%,transparent)}
+  .track .labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;
+    letter-spacing:.06em;color:var(--on-deep-soft)}
+  .track .ticklabel{position:absolute;top:30px;transform:translateX(-50%);font-family:var(--mono);
+    font-size:12px;letter-spacing:.04em;color:var(--on-deep-soft);white-space:nowrap;cursor:none;transition:color .25s}
+  .track .ticklabel.on{color:var(--c10)}
+  .track .scrubhint{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--on-deep-soft);margin-top:30px;opacity:.7}
+
+  /* education + footer */
+  .footer{background:var(--c30);color:var(--on-deep);padding:0 0 70px}
+  .edu{border-top:1px solid var(--line-deep);padding-top:50px;display:grid;grid-template-columns:auto 1fr;gap:64px}
+  .edu .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-deep-soft)}
+  .edu .rows{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+  .edu .erow .role{font-size:17px;font-weight:600}
+  .edu .erow .sch{font-family:var(--mono);font-size:12px;color:var(--on-deep-soft);margin-top:5px;letter-spacing:.03em}
+  .cta{padding:80px 0 0;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:30px}
+  .cta h2{font-size:clamp(34px,5vw,72px);font-weight:600;letter-spacing:-.03em;line-height:.95}
+  .cta h2 a{color:var(--c10);font-style:italic}
+  .cta .right{font-family:var(--mono);font-size:13px;color:var(--on-deep-soft);text-align:right;letter-spacing:.04em;line-height:2}
+  .cta .right a:hover{color:var(--c10)}
+
+  @media (max-width:880px){
+    .wrap{padding:0 26px}.nav{padding:18px 26px}.scrollcue{left:26px}
+    .case,.case.flip,.case.deep,.era{grid-template-columns:1fr;gap:30px}
+    .case.flip .case-info{order:0}.case.deep{padding:36px 28px}
+    .edu{grid-template-columns:1fr;gap:24px}.edu .rows{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body data-theme="conservatory">
+  <div id="cursor"><span class="ctxt">VIEW</span></div>
+
+  <div class="navblur" id="navblur">
+    <div class="blur-layer"></div>
+    <div class="tint"></div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <a class="brand" href="#top">
+      <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6 5.4 10.8 11.4 11.4v1.2C17.4 13.2 12.6 18 12 24h-1.2C10.2 18 5.4 13.2-.6 12.6v-1.2C5.4 10.8 10.2 6 10.8 0H12z"/></svg>
+      <b>Theresa&nbsp;Kong</b>
+    </a>
+    <div class="links">
+      <a href="#work">Work</a>
+      <a href="#path">Path</a>
+      <a href="mailto:hello@theresakong.com">Contact</a>
+      <span class="avail"><i class="pdot"></i>Open to senior roles</span>
+    </div>
+  </nav>
+
+  <!-- ==========  HERO  ========== -->
+  <header class="hero" id="top" data-screen-label="Hero">
+    <canvas id="constellation"></canvas>
+    <div class="wrap">
+      <div class="eyebrow">Senior Product Designer · New York</div>
+      <h1 class="kin"><span class="line" data-text="Pull on the"></span> <span class="line" data-text="system."></span> <span class="line accent" data-text="It responds."></span></h1>
+      <p class="lede"><b>I design multi-sided products where one deliberate move makes everything downstream click.</b> Six years turning tangled, three-sided complexity into surfaces that feel obvious — most recently as a senior designer at TourHero.</p>
+      <div class="verbs" id="verbs">
+        <button class="verb" data-k="Experiment" data-r="I prototype to <b>think</b>, not to decorate — the fastest way to find the real problem is to build a rough version of the wrong answer."><span class="vd"></span>Experiment</button>
+        <button class="verb" data-k="Explore" data-r="I map the <b>whole machine</b> before drawing a single screen. Every part should know what the others are doing."><span class="vd"></span>Explore</button>
+        <button class="verb" data-k="Experience" data-r="I hide the complexity so the <b>surface feels inevitable</b> — calm on top, precise underneath."><span class="vd"></span>Experience</button>
+      </div>
+      <div class="verb-reveal" id="verbReveal"><span class="vk">Hover a verb</span>three ways I work — pick one.</div>
+    </div>
+    <a href="#work" class="scrollcue"><span class="bar"></span>Selected work</a>
+  </header>
+
+  <!-- ==========  SELECTED WORK  ========== -->
+  <section class="work" id="work" data-screen-label="Selected Work">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow" style="margin-bottom:18px">Selected work</div>
+          <h2>Three systems,<br>made to feel like one idea.</h2>
+        </div>
+        <div class="meta">2020 — 2026 · 03 projects<br>
+          <span class="legend"><i></i> red = the measurable impact</span>
+        </div>
+      </div>
+
+      <!-- CASE 01 — flagship, deep -->
+      <article class="case deep" data-case>
+        <div class="case-info">
+          <div class="case-num">01 / TourHero · 2025—26</div>
+          <h3>Self-Launch: a marketplace that runs itself</h3>
+          <p class="desc">I turned a three-sided marketplace into a self-serve engine — travelers describe intent in <b>plain words</b>, AI drafts a custom trip, and hosts publish the <b>same day</b> instead of waiting on manual quotes.</p>
+          <div class="tags"><span class="tag">AI Workflows</span><span class="tag">Human-in-the-loop</span><span class="tag">Systems</span></div>
+          <div class="steps" data-steps>
+            <div class="step" data-step="0"><span class="sn">01</span><span class="st"><b>Capture intent in plain language</b>No forms to fight — travelers just say what they want.</span></div>
+            <div class="step" data-step="1"><span class="sn">02</span><span class="st"><b>AI drafts the deliverable</b>Intent becomes an editable, executable itinerary in seconds.</span></div>
+            <div class="step" data-step="2"><span class="sn">03</span><span class="st"><b>Human-in-the-loop approval</b>Hosts refine and publish — confidence stays with the expert.</span></div>
+          </div>
+          <div class="impact"><span class="imp-dot"></span>29-day publish → same-day · −25 hrs / week saved</div>
+        </div>
+        <div class="case-vis">
+          <div class="frame" data-frame>
+            <div class="bar"><i></i><i></i><i></i><div class="url">tourhero.com / self-launch</div></div>
+            <div class="stage">
+              <image-slot id="case1" placeholder="Drop the Self-Launch screen" radius="0"></image-slot>
+              <div class="pin" data-pin="0" style="left:24%;top:34%">1</div>
+              <div class="pin" data-pin="1" style="left:58%;top:52%">2</div>
+              <div class="pin" data-pin="2" style="left:80%;top:30%">3</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- CASE 02 -->
+      <article class="case" data-case>
+        <div class="case-info">
+          <div class="case-num">02 / TourHero · 2021—25</div>
+          <h3>0 → 1: the consumer journey, end to end</h3>
+          <p class="desc">As <b>founding designer</b> I built the traveler experience from nothing — including a "readiness" portal that untangles everything that happens <b>after you book</b>.</p>
+          <div class="tags"><span class="tag">0 → 1</span><span class="tag">Consumer</span><span class="tag">Ops Dashboards</span></div>
+          <div class="steps" data-steps>
+            <div class="step" data-step="0"><span class="sn">01</span><span class="st"><b>End-to-end booking flow</b>One coherent journey from discovery to departure.</span></div>
+            <div class="step" data-step="1"><span class="sn">02</span><span class="st"><b>Post-purchase readiness portal</b>The messy middle, made calm and trackable.</span></div>
+            <div class="step" data-step="2"><span class="sn">03</span><span class="st"><b>Centralized ops dashboards</b>Backend feasibility translated into one operational view.</span></div>
+          </div>
+          <div class="impact"><span class="imp-dot"></span>Founding design · 4 years from 0 → scale</div>
+        </div>
+        <div class="case-vis">
+          <div class="frame" data-frame>
+            <div class="bar"><i></i><i></i><i></i><div class="url">tourhero.com / readiness</div></div>
+            <div class="stage">
+              <image-slot id="case2" placeholder="Drop the readiness portal" radius="0"></image-slot>
+              <div class="pin" data-pin="0" style="left:30%;top:40%">1</div>
+              <div class="pin" data-pin="1" style="left:62%;top:36%">2</div>
+              <div class="pin" data-pin="2" style="left:50%;top:68%">3</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- CASE 03 -->
+      <article class="case flip" data-case>
+        <div class="case-info">
+          <div class="case-num">03 / Errunds · 2020—21</div>
+          <h3>A grocery brain shoppers actually understand</h3>
+          <p class="desc">I designed the <b>category system and navigation</b> behind a grocery marketplace — then tested it until people found anything on the <b>first try</b>.</p>
+          <div class="tags"><span class="tag">Taxonomy</span><span class="tag">Design Systems</span><span class="tag">Usability</span></div>
+          <div class="steps" data-steps>
+            <div class="step" data-step="0"><span class="sn">01</span><span class="st"><b>Scalable category taxonomy</b>A visual structure that grows without breaking.</span></div>
+            <div class="step" data-step="1"><span class="sn">02</span><span class="st"><b>Multi-SKU navigation</b>Validated in testing until it just worked.</span></div>
+            <div class="step" data-step="2"><span class="sn">03</span><span class="st"><b>Reusable component library</b>3 MVPs shipped across mobile + web.</span></div>
+          </div>
+          <div class="impact"><span class="imp-dot"></span>100% task success · −50% completion time</div>
+        </div>
+        <div class="case-vis">
+          <div class="frame" data-frame>
+            <div class="bar"><i></i><i></i><i></i><div class="url">errunds.com / browse</div></div>
+            <div class="stage">
+              <image-slot id="case3" placeholder="Drop the grocery nav" radius="0"></image-slot>
+              <div class="pin" data-pin="0" style="left:22%;top:38%">1</div>
+              <div class="pin" data-pin="1" style="left:54%;top:30%">2</div>
+              <div class="pin" data-pin="2" style="left:74%;top:60%">3</div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ==========  TIMELINE  ========== -->
+  <section class="timeline" id="path" data-screen-label="Path / Timeline">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">The path</div>
+          <h2>Six years, three eras,<br>one through-line.</h2>
+        </div>
+        <div class="meta">Drag the track or click a year<br>to walk through it</div>
+      </div>
+
+      <div class="era-stage" id="eraStage">
+        <!-- eras injected by JS -->
+      </div>
+
+      <div class="track" id="track">
+        <div class="rail"><div class="prog" id="prog"></div></div>
+        <div class="labels" id="ticks"></div>
+        <div class="scrubhint">◂ drag to scrub the years ▸</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========  FOOTER  ========== -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="edu">
+        <div class="lbl">Education</div>
+        <div class="rows">
+          <div class="erow"><div class="role">UI + Visual Design</div><div class="sch">Designlab</div></div>
+          <div class="erow"><div class="role">UX Design</div><div class="sch">General Assembly</div></div>
+          <div class="erow"><div class="role">B.A. Psychology</div><div class="sch">CUNY · Hunter College</div></div>
+        </div>
+      </div>
+      <div class="cta">
+        <h2>Let's build the<br>system <a href="mailto:hello@theresakong.com">together.</a></h2>
+        <div class="right">
+          <a href="mailto:hello@theresakong.com">hello@theresakong.com</a><br>
+          <a href="https://theresakong.com">theresakong.com</a><br>
+          New York, NY
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div id="tweaks-root"></div>
+
+  <script src="image-slot.js"></script>
+  <script src="portfolio/palettes.js"></script>
+  <script src="portfolio/hero.js"></script>
+  <script src="portfolio/work.js"></script>
+  <script src="portfolio/timeline.js"></script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="portfolio/tweaks.jsx"></script>
+</body>
+</html>

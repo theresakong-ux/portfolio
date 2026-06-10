@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theresa Kong — Senior Product Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f1e7;
+  --ink: #1a120c;
+  --ink-soft: rgba(26,18,12,.46);
+  --ink-mute: rgba(26,18,12,.62);
+  --faint: rgba(26,18,12,.07);
+  --red: #d35555;
+  --ease: cubic-bezier(.22,.85,.25,1);
+  --ease-snap: cubic-bezier(.34,.1,.18,1.05);
+  --sans: 'Hanken Grotesk', system-ui, sans-serif;
+  --mono: 'Spline Sans Mono', ui-monospace, monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased;cursor:none}
+
+/* ── BLOB LAYER ── */
+#blobs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(85px);mix-blend-mode:multiply;will-change:transform}
+.b0{width:64vw;height:64vw;background:radial-gradient(circle,rgba(210,138,56,.62) 0%,transparent 68%);top:-16vw;left:-14vw}
+.b1{width:56vw;height:56vw;background:radial-gradient(circle,rgba(211,85,85,.5) 0%,transparent 68%);bottom:-18vw;right:-10vw}
+.b2{width:46vw;height:46vw;background:radial-gradient(circle,rgba(78,148,106,.42) 0%,transparent 68%);top:25vw;left:38vw}
+.b3{width:42vw;height:42vw;background:radial-gradient(circle,rgba(170,110,152,.34) 0%,transparent 68%);top:3vw;right:14vw}
+
+.grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vig{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(135% 100% at 50% 46%,transparent 52%,rgba(26,18,12,.14) 100%)}
+
+#c{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* cursor */
+#cur{position:fixed;z-index:200;pointer-events:none;top:0;left:0;
+  width:11px;height:11px;border-radius:50%;border:1.5px solid var(--ink);
+  transform:translate(-50%,-50%);
+  transition:width .25s var(--ease),height .25s var(--ease),background .22s,border-color .22s}
+#cur.view{width:64px;height:64px;background:var(--red);border-color:var(--red)}
+#cur .ct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:#fff;opacity:0;transition:opacity .2s}
+#cur.view .ct{opacity:1}
+@media(hover:none){#cur{display:none}body{cursor:auto}}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:30;padding:26px 44px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
+nav .brand{display:flex;align-items:center;gap:9px;color:var(--ink);font-weight:600;white-space:nowrap;text-decoration:none}
+nav .brand svg{color:var(--red)}
+nav .links{display:flex;gap:24px;align-items:center}
+nav .links a{color:var(--ink-soft);transition:color .2s;text-decoration:none}
+nav .links a:hover{color:var(--ink)}
+nav .dot{width:6px;height:6px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 0 3px rgba(211,85,85,.2);flex:0 0 auto}
+nav .avail{display:flex;align-items:center;gap:8px;color:var(--ink-soft)}
+
+/* click hint */
+#hint{position:fixed;bottom:46px;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(26,18,12,.34);opacity:0;transition:opacity .6s;pointer-events:none;white-space:nowrap}
+#hint.show{opacity:1;animation:hpulse 3s ease-in-out infinite}
+@keyframes hpulse{0%,100%{opacity:.34}50%{opacity:.72}}
+
+/* small editorial section header (post-flow) */
+#section-meta{position:fixed;left:44px;bottom:36px;z-index:10;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);
+  opacity:0;transition:opacity .8s var(--ease) .6s;pointer-events:none}
+#section-meta.show{opacity:1}
+#section-meta span{color:var(--red)}
+
+#section-count{position:fixed;right:44px;bottom:36px;z-index:10;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);
+  opacity:0;transition:opacity .8s var(--ease) .6s;pointer-events:none}
+#section-count.show{opacity:1}
+
+/* ── CARDS — editorial layout ── */
+#cards{position:fixed;inset:0;z-index:5;pointer-events:none}
+.card{position:absolute;background:#fff;border-radius:22px;overflow:hidden;
+  border:1px solid var(--faint);
+  box-shadow:0 8px 44px rgba(26,18,12,.10),0 2px 6px rgba(26,18,12,.04);
+  opacity:0;transform:translateY(28px) scale(.97);
+  transition:opacity .65s var(--ease),transform .65s var(--ease),
+    box-shadow .35s var(--ease),border-color .35s;
+  pointer-events:none;display:flex;flex-direction:column}
+.card.visible{opacity:1;transform:none;pointer-events:auto}
+
+/* three sizes */
+.card.size-feature{ width:clamp(380px, 27vw, 460px); }
+.card.size-medium { width:clamp(330px, 24vw, 400px); }
+.card.size-side   { width:clamp(330px, 24vw, 400px); }
+
+/* positions */
+.card[data-pos="left"]    { left:5vw;  top:15vh; }
+.card[data-pos="center"]  { left:50%; top:11vh; transform:translateX(-50%) translateY(28px) scale(.97); }
+.card[data-pos="center"].visible{ transform:translateX(-50%) }
+.card[data-pos="right"]   { right:5vw; top:17vh; }
+
+.card-art{position:relative;width:100%;aspect-ratio:5/4;overflow:hidden;background:#f0ece3}
+.card.size-feature .card-art{aspect-ratio:4/4.2}
+.card-art canvas{display:block;width:100%;height:100%;transition:transform .55s var(--ease)}
+.card:hover .card-art canvas{transform:scale(1.06)}
+
+.card-foot{padding:22px 24px 24px;display:flex;flex-direction:column;flex:1}
+.card.size-feature .card-foot{padding:24px 26px 26px}
+
+.card-meta{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  margin-bottom:10px}
+.card-num{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--red);font-weight:500}
+.card-co{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-soft);
+  text-transform:uppercase;white-space:nowrap}
+
+.card-title{font-size:22px;font-weight:600;line-height:1.1;letter-spacing:-.022em;
+  color:var(--ink);margin-bottom:18px}
+.card.size-feature .card-title{font-size:28px}
+
+.card-impact{display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--red);
+  letter-spacing:.02em}
+.card-impact .impact-dot{width:7px;height:7px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 0 3.5px rgba(211,85,85,.18);flex:0 0 auto}
+
+/* hover lift — snappy */
+.card{transition:opacity .65s var(--ease),transform .35s var(--ease),
+  box-shadow .35s var(--ease),border-color .35s}
+.card[data-pos="left"]:hover  { transform:translateY(-9px) }
+.card[data-pos="right"]:hover { transform:translateY(-9px) }
+.card[data-pos="center"]:hover{ transform:translateX(-50%) translateY(-9px) }
+.card:hover{box-shadow:0 28px 80px rgba(26,18,12,.18),0 4px 12px rgba(26,18,12,.06);
+  border-color:rgba(211,85,85,.22)}
+
+/* subtle continuous bob — slower, taller cards */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes bobC{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-7px)}}
+.card.visible[data-pos="left"]  { animation:bob 8s ease-in-out infinite }
+.card.visible[data-pos="right"] { animation:bob 7s ease-in-out infinite 1.6s }
+.card.visible[data-pos="center"]{ animation:bobC 9s ease-in-out infinite .8s }
+
+/* ── MODAL ── */
+#modal{position:fixed;inset:0;z-index:100;background:#1a120c;
+  opacity:0;pointer-events:none;transform:scale(.94);transform-origin:50% 50%;
+  transition:opacity .45s var(--ease),transform .55s var(--ease)}
+#modal.open{opacity:1;pointer-events:auto;transform:scale(1)}
+#modal .matmos{position:absolute;inset:0;z-index:0;
+  background:radial-gradient(110% 120% at 0% 60%,#261a12 0%,#1a120c 60%)}
+#modal .mi{position:relative;z-index:1;width:100%;height:100%;display:grid;
+  grid-template-columns:1fr 1fr;opacity:0;transition:opacity .4s .35s}
+#modal.open .mi{opacity:1}
+#modal .ml{overflow:hidden}
+#modal .ma{width:100%;height:100%;display:block}
+#modal .mr{padding:72px 60px 60px;display:flex;flex-direction:column;justify-content:center;overflow-y:auto}
+#modal .mn{font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.06em;margin-bottom:14px}
+#modal h2{font-size:clamp(28px,3.4vw,44px);font-weight:600;letter-spacing:-.03em;
+  line-height:1.02;color:#f0e8da;margin-bottom:36px}
+#modal .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(240,232,218,.38);margin-bottom:8px;display:block}
+#modal .blk{margin-bottom:30px}
+#modal .blk p{font-size:17px;line-height:1.62;color:rgba(240,232,218,.8);max-width:40ch}
+#modal .blk p b{color:#f0e8da;font-weight:600}
+#modal .imp{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;
+  border:1px solid var(--red);border-radius:40px;font-family:var(--mono);
+  font-size:14px;color:var(--red);font-weight:500}
+#modal .imp i{width:8px;height:8px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 0 4px rgba(211,85,85,.2);flex:0 0 auto}
+#modal .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+#modal .tags span{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
+  padding:7px 13px;border-radius:30px;border:1px solid rgba(240,232,218,.13);
+  color:rgba(240,232,218,.48)}
+#mc{position:absolute;top:26px;right:36px;z-index:10;background:rgba(26,18,12,.4);
+  border:1px solid rgba(240,232,218,.14);border-radius:30px;padding:8px 18px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(240,232,218,.55);cursor:none;transition:border-color .2s,color .2s}
+#mc:hover{border-color:#f0e8da;color:#f0e8da}
+</style>
+</head>
+<body>
+<div id="blobs">
+  <div class="blob b0" id="bl0"></div>
+  <div class="blob b1" id="bl1"></div>
+  <div class="blob b2" id="bl2"></div>
+  <div class="blob b3" id="bl3"></div>
+</div>
+<canvas id="c"></canvas>
+<div class="vig"></div>
+<div class="grain"></div>
+<div id="cur"><span class="ct">view</span></div>
+
+<nav>
+  <a class="brand" href="#">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6 5.4 10.8 11.4 11.4v1.2C17.4 13.2 12.6 18 12 24h-1.2C10.2 18 5.4 13.2-.6 12.6v-1.2C5.4 10.8 10.2 6 10.8 0H12z"/></svg>
+    <b>Theresa Kong</b>
+  </a>
+  <div class="links">
+    <a href="#">Work</a><a href="#">Path</a>
+    <a href="mailto:hello@theresakong.com">Contact</a>
+    <span class="avail"><i class="dot"></i>Open to senior roles</span>
+  </div>
+</nav>
+
+<div id="hint">click anywhere to open</div>
+<div id="section-meta"><span>◆</span>&nbsp;&nbsp;Selected work · 2020 — 2026</div>
+<div id="section-count">003 / 003</div>
+
+<div id="cards">
+  <article class="card size-medium" data-idx="1" data-pos="left">
+    <div class="card-art"><canvas class="ca" id="art1"></canvas></div>
+    <div class="card-foot">
+      <div class="card-meta">
+        <span class="card-num">02</span>
+        <span class="card-co">TourHero · 2021 — 25</span>
+      </div>
+      <h3 class="card-title">Building the 0 → 1 consumer journey</h3>
+      <div class="card-impact"><span class="impact-dot"></span>Founding design · 4 years to scale</div>
+    </div>
+  </article>
+
+  <article class="card size-feature" data-idx="0" data-pos="center">
+    <div class="card-art"><canvas class="ca" id="art0"></canvas></div>
+    <div class="card-foot">
+      <div class="card-meta">
+        <span class="card-num">01</span>
+        <span class="card-co">TourHero · 2025 — 26</span>
+      </div>
+      <h3 class="card-title">A self-launch ecosystem for a three-sided marketplace</h3>
+      <div class="card-impact"><span class="impact-dot"></span>29-day publish → same-day · −25 hrs / week</div>
+    </div>
+  </article>
+
+  <article class="card size-side" data-idx="2" data-pos="right">
+    <div class="card-art"><canvas class="ca" id="art2"></canvas></div>
+    <div class="card-foot">
+      <div class="card-meta">
+        <span class="card-num">03</span>
+        <span class="card-co">Errunds · 2020 — 21</span>
+      </div>
+      <h3 class="card-title">Grocery taxonomy &amp; multi-SKU navigation</h3>
+      <div class="card-impact"><span class="impact-dot"></span>100% task success · −50% completion time</div>
+    </div>
+  </article>
+</div>
+
+<div id="modal">
+  <div class="matmos"></div>
+  <button id="mc" onclick="closeCase()">✕ close</button>
+  <div class="mi">
+    <div class="ml"><canvas class="ma" id="mArt"></canvas></div>
+    <div class="mr" id="mText"></div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const cur = document.getElementById('cur');
+const modal = document.getElementById('modal');
+const hint = document.getElementById('hint');
+const blobEls = [0,1,2,3].map(i=>document.getElementById('bl'+i));
+const sectionMeta = document.getElementById('section-meta');
+const sectionCount = document.getElementById('section-count');
+
+let W=window.innerWidth, H=window.innerHeight, dpr=1;
+let mx=-9999, my=-9999, mxp=-9999, myp=-9999;
+let state='IDLE', particles=[], tick=0;
+
+/* Water-like motion: each blob has two layered drifts (slow + fast)
+   plus a subtle breathing scale. NO cursor interaction. */
+const BDATA=[
+  // [ampX,ampY, freqX,freqY, phaseX,phaseY]
+  [90,75,  .00045,.00038,  0,    0   ],
+  [105,85, .00038,.00050,  1.8,  .6  ],
+  [75,100, .00060,.00045,  .7,   1.2 ],
+  [65,80,  .00032,.00054,  2.4,  .3  ],
+];
+
+const CASES=[
+  {num:'01',title:'Self-Launch Ecosystem',co:'TourHero · 2025—26',
+   problem:'A three-sided marketplace requiring 29-day manual quote cycles, human coordinators, and constant three-party alignment on every trip.',
+   move:'I redesigned the intent-capture layer so <b>AI could draft the deliverable</b> — collapsing a 29-day cycle into same-day publishing without removing human judgment from the approval step.',
+   impact:'29-day publish → same-day · −25 hrs / week',
+   tags:['AI Workflows','Human-in-the-Loop','Systems Design','Multi-sided Marketplaces'],art:0},
+  {num:'02',title:'0 → 1 Consumer Journey',co:'TourHero · 2021—25',
+   problem:'As founding designer: no product, no design system, and three competing stakeholder surfaces (traveler, host, operations) each needing to feel like one coherent experience.',
+   move:'I built the <b>entire consumer journey from zero</b> — discovery, booking, and a post-purchase readiness portal that turns the messy middle into something calm and trackable.',
+   impact:'Founding design · 0 → scale over four years',
+   tags:['0 → 1 Founding','Consumer Experience','Ops Dashboards','Design Systems'],art:1},
+  {num:'03',title:'Grocery Taxonomy & Nav',co:'Errunds · 2020—21',
+   problem:'A grocery marketplace where shoppers could not find anything — no coherent category structure, multi-SKU nav that broke under real products, and no components to scale with.',
+   move:'I <b>designed the category system and multi-SKU nav from the ground up</b>, running usability testing until task success hit 100% — then systematized into reusable components.',
+   impact:'100% task success rate · −50% completion time',
+   tags:['Taxonomy Design','Usability Testing','Component Library','Mobile + Web'],art:2},
+];
+
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+// ── CARD ART ──────────────────────────────────────────────
+function drawArt(id,idx,w,h){
+  const el=document.getElementById(id); if(!el)return;
+  const d=Math.min(window.devicePixelRatio||1,2);
+  el.width=w*d; el.height=h*d;
+  const g=el.getContext('2d'); g.setTransform(d,0,0,d,0,0);
+  // warm cream art bg with subtle vignette
+  const bg=g.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*.7);
+  bg.addColorStop(0,'#f3efe5'); bg.addColorStop(1,'#e9e3d4');
+  g.fillStyle=bg; g.fillRect(0,0,w,h);
+  const R='211,85,85', I='26,18,12';
+
+  if(idx===0){ // FEATURE: system with central node + connections, larger scale
+    const ns=[
+      {x:.5,y:.42,r:18},
+      {x:.18,y:.22,r:8},  {x:.82,y:.22,r:8},
+      {x:.13,y:.72,r:7},  {x:.87,y:.72,r:7},
+      {x:.36,y:.85,r:6},  {x:.64,y:.85,r:6},
+    ];
+    // connections all to center
+    for(let i=1;i<ns.length;i++){
+      g.strokeStyle=`rgba(${R},.18)`; g.lineWidth=1.2;
+      g.beginPath();
+      g.moveTo(ns[0].x*w,ns[0].y*h);
+      g.lineTo(ns[i].x*w,ns[i].y*h);
+      g.stroke();
+    }
+    // halo on center
+    g.strokeStyle=`rgba(${R},.13)`; g.lineWidth=10;
+    g.beginPath(); g.arc(ns[0].x*w,ns[0].y*h,ns[0].r+14,0,Math.PI*2); g.stroke();
+    g.strokeStyle=`rgba(${R},.22)`; g.lineWidth=4;
+    g.beginPath(); g.arc(ns[0].x*w,ns[0].y*h,ns[0].r+6,0,Math.PI*2); g.stroke();
+    // nodes
+    ns.forEach((n,i)=>{
+      g.fillStyle=i===0?`rgba(${R},.92)`:`rgba(${I},.36)`;
+      g.beginPath(); g.arc(n.x*w,n.y*h,n.r,0,Math.PI*2); g.fill();
+    });
+  } else if(idx===1){ // 0→1: flow funnel
+    for(let i=0;i<8;i++){const x=.10+i*.105, sp=.50-i*.045;
+      for(let j=0;j<6;j++){const y=.15+j*sp/5, a=j===Math.floor(6/2)?.55:.16;
+        g.fillStyle=i===7?`rgba(${R},${a})`:`rgba(${I},${a*.55})`;
+        g.beginPath(); g.arc(x*w,y*h,3+j*.4,0,Math.PI*2); g.fill();
+      }
+    }
+    g.strokeStyle=`rgba(${R},.42)`; g.lineWidth=2.2;
+    g.beginPath(); g.moveTo(.10*w,.5*h);
+    g.bezierCurveTo(.4*w,.05*h, .6*w,.95*h, .92*w,.5*h);
+    g.stroke();
+  } else { // taxonomy tree
+    (function br(x,y,dx,dy,d){if(d<1)return;
+      const nx=x+dx*w, ny=y+dy*h;
+      g.strokeStyle=`rgba(${I},${d*.13})`; g.lineWidth=d*.8;
+      g.beginPath(); g.moveTo(x,y); g.lineTo(nx,ny); g.stroke();
+      g.fillStyle=d===3?`rgba(${R},.8)`:`rgba(${I},.32)`;
+      g.beginPath(); g.arc(nx,ny,2+d,0,Math.PI*2); g.fill();
+      br(nx,ny,-dx*.5,dy*.85,d-1);
+      br(nx,ny,dx*.5,dy*.85,d-1);
+      if(d===3) br(nx,ny,0,dy*.85,d-1);
+    })(w*.5,h*.06,0,.21,3);
+  }
+}
+
+function initCardArts(){
+  document.querySelectorAll('.ca').forEach((ca,i)=>{
+    const w=ca.parentElement.clientWidth||360;
+    const ratio=ca.parentElement.style.aspectRatio || '5/4';
+    const h=Math.round(w*.8);
+    drawArt('art'+i, i, w, h);
+  });
+}
+
+// ── PARTICLES ──────────────────────────────────────────────
+async function initParticles(){
+  await document.fonts.load('700 160px "Hanken Grotesk"');
+  const fs=Math.min(W*.145,200);
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const oc=off.getContext('2d'); oc.fillStyle='#000';
+  oc.font=`700 ${fs}px "Hanken Grotesk",sans-serif`;
+  oc.textAlign='center'; oc.textBaseline='middle';
+  oc.fillText('THERESA',W/2,H/2-fs*.58);
+  oc.fillText('KONG',W/2,H/2+fs*.52);
+  const id=oc.getImageData(0,0,W,H).data, step=4, pool=[];
+  for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step)
+    if(id[(y*W+x)*4+3]>110)pool.push({hx:x+(Math.random()-.5)*3,hy:y+(Math.random()-.5)*3});
+  pool.sort(()=>Math.random()-.5);
+  particles=pool.slice(0,Math.min(820,pool.length)).map(({hx,hy})=>({
+    hx,hy, x:hx+(Math.random()-.5)*W*.9, y:hy+(Math.random()-.5)*H*.9,
+    vx:(Math.random()-.5)*5, vy:(Math.random()-.5)*5,
+    sz:1.4+Math.random()*1.6, ph:Math.random()*Math.PI*2, a:0, col:Math.random()>.82?1:0
+  }));
+  state='FORMING';
+  setTimeout(()=>{ if(state==='FORMING'){state='FORMED';onFormed();} },1400);
+}
+
+function onFormed(){
+  hint.classList.add('show');
+  document.addEventListener('click',onFirstClick);
+}
+function onFirstClick(e){
+  if(e.target.closest('.card,#modal,#mc,nav'))return;
+  document.removeEventListener('click',onFirstClick);
+  hint.classList.remove('show');
+  flow();
+}
+
+function flow(){
+  state='FLOWING';
+  const cards=[...document.querySelectorAll('.card')];
+  // build target zones from actual card geometry
+  const targets=cards.map(c=>{
+    const r=c.getBoundingClientRect();
+    return {cx:r.left+r.width/2, cy:r.top+r.height/2, w:r.width, h:r.height,
+            idxOnPage:+c.dataset.idx};
+  });
+  // build target lookup by case index
+  const tgtByCase={};
+  targets.forEach(t=>tgtByCase[t.idxOnPage]=t);
+
+  // assign each particle to a card by horizontal/vertical position
+  for(const p of particles){
+    let caseIdx;
+    if (p.hy > H*0.52)        caseIdx = 0;        // bottom row (KONG) → FEATURE (center)
+    else if (p.hx < W*0.5)    caseIdx = 1;        // left half → LEFT card (02)
+    else                       caseIdx = 2;        // right half → RIGHT card (03)
+    const t=tgtByCase[caseIdx];
+    p.tx = t.cx + (Math.random()-.5)*t.w*.7;
+    p.ty = t.cy + (Math.random()-.5)*t.h*.6;
+    p.delay = Math.random()*22;
+  }
+
+  // reveal cards while particles are flowing in
+  cards.forEach((c,i)=>{
+    const order=[1,0,2].indexOf(+c.dataset.idx); // left, then center, then right
+    setTimeout(()=>c.classList.add('visible'), 280 + order*150);
+  });
+  setTimeout(()=>{
+    sectionMeta.classList.add('show');
+    sectionCount.classList.add('show');
+  }, 700);
+}
+
+// ── MAIN LOOP ──────────────────────────────────────────────
+function loop(){
+  tick++;
+  ctx.clearRect(0,0,W,H);
+
+  // ── water-like blob motion ──
+  const t=tick*.001;
+  blobEls.forEach((b,i)=>{
+    const [ax,ay,fx,fy,phx,phy]=BDATA[i];
+    // primary slow drift
+    const dx1=Math.sin(t*fx*2*Math.PI+phx)*ax;
+    const dy1=Math.cos(t*fy*2*Math.PI+phy)*ay;
+    // secondary smaller wobble at different freq
+    const dx2=Math.sin(t*fx*5.7*Math.PI+phx*1.7)*ax*.22;
+    const dy2=Math.cos(t*fy*4.9*Math.PI+phy*1.3)*ay*.22;
+    // subtle scale breathing
+    const s=1 + Math.sin(t*Math.PI*.6+phx)*.045;
+    b.style.transform=`translate(${dx1+dx2}px,${dy1+dy2}px) scale(${s})`;
+  });
+
+  // ── particles ──
+  for(const p of particles){
+    if(state==='FORMING'){
+      p.vx+=(p.hx-p.x)*.045; p.vy+=(p.hy-p.y)*.045; p.vx*=.86; p.vy*=.86;
+      p.a=Math.min(1,p.a+.028);
+    } else if(state==='FORMED'){
+      p.vx+=(p.hx-p.x)*.038; p.vy+=(p.hy-p.y)*.038;
+      if (mx>0){
+        const dx=p.x-mx, dy=p.y-my, d=Math.hypot(dx,dy);
+        if(d<110){const f=(1-d/110)*3.2; p.vx+=dx/d*f; p.vy+=dy/d*f;}
+      }
+      p.vx*=.88; p.vy*=.88;
+      p.a=.68+Math.sin(p.ph+tick*.018)*.28;
+    } else if(state==='FLOWING'){
+      if(p.delay>0){ p.delay--; p.vx*=.94; p.vy*=.94; }
+      else {
+        const dx=p.tx-p.x, dy=p.ty-p.y, d=Math.hypot(dx,dy);
+        p.vx += dx*.022; p.vy += dy*.022;
+        p.vx*=.91; p.vy*=.91;
+        if (d < 70) p.a = Math.max(0, p.a - .055);
+        else p.a = Math.min(1, p.a + .015);
+      }
+    }
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.a<=.004)continue;
+    ctx.fillStyle=p.col?`rgba(211,85,85,${p.a})`:`rgba(26,18,12,${p.a*.65})`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.sz,0,Math.PI*2); ctx.fill();
+  }
+
+  // cursor
+  mxp+=(mx-mxp)*.28; myp+=(my-myp)*.28;
+  cur.style.transform=`translate(${mxp-6}px,${myp-6}px)`;
+  requestAnimationFrame(loop);
+}
+
+// ── EVENTS ──────────────────────────────────────────────
+window.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.classList.toggle('view',!!e.target.closest('.card'));
+});
+
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('click',()=>openCase(+card.dataset.idx));
+});
+
+function openCase(idx){
+  const data=CASES[idx];
+  const card=document.querySelector(`.card[data-idx="${idx}"]`);
+  const r=card.getBoundingClientRect();
+  const ox=((r.left+r.width/2)/window.innerWidth*100).toFixed(1)+'%';
+  const oy=((r.top+r.height/2)/window.innerHeight*100).toFixed(1)+'%';
+  modal.style.transformOrigin=`${ox} ${oy}`;
+  drawArt('mArt',data.art,Math.ceil(window.innerWidth/2),window.innerHeight);
+  document.getElementById('mText').innerHTML=`
+    <span class="mn">${data.num} / ${data.co}</span>
+    <h2>${data.title}</h2>
+    <div class="blk"><span class="lbl">The problem</span><p>${data.problem}</p></div>
+    <div class="blk"><span class="lbl">The move</span><p>${data.move}</p></div>
+    <div class="blk"><span class="lbl">Impact</span><div class="imp"><i></i>${data.impact}</div></div>
+    <div class="tags">${data.tags.map(t=>`<span>${t}</span>`).join('')}</div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>modal.classList.add('open')));
+}
+
+function closeCase(){
+  modal.classList.remove('open');
+}
+
+// ── INIT ──────────────────────────────────────────────
+window.addEventListener('resize',()=>{ resize(); initCardArts(); });
+resize();
+requestAnimationFrame(initCardArts);
+loop();
+initParticles();
+</script>
+</body>
+</html>

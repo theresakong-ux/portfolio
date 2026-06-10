@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Theresa Kong — Magnetic Field</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f1e9;--paper-2:#efe9dd;--ink:#454545;--ink-60:#8a8782;--ink-30:#bdbab3;
+    --accent:#d35555;--line:rgba(69,69,69,.14);
+    --sans:'Hanken Grotesk',system-ui,sans-serif;--mono:'Spline Sans Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1440px;height:1000px;overflow:hidden}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);position:relative;
+    -webkit-font-smoothing:antialiased;cursor:none}
+  #cursor{position:fixed;z-index:80;width:14px;height:14px;border:1.5px solid var(--ink);
+    border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:width .18s,height .18s,background .18s,border-color .18s}
+  #cursor.hot{width:40px;height:40px;background:rgba(211,85,85,.10);border-color:var(--accent)}
+  #cursor.grab{width:30px;height:30px;background:var(--ink);border-color:var(--ink)}
+  #ring{position:fixed;z-index:5;width:300px;height:300px;border-radius:50%;pointer-events:none;
+    transform:translate(-50%,-50%);border:1px dashed rgba(211,85,85,.22);opacity:0;transition:opacity .3s}
+
+  .stage{position:relative;z-index:1;width:100%;height:100%;padding:34px 64px 0;
+    display:flex;flex-direction:column}
+  .topbar{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);
+    font-size:12.5px;letter-spacing:.04em;color:var(--ink-60);text-transform:uppercase;z-index:20}
+  .topbar .brand{display:flex;align-items:center;gap:10px;color:var(--ink)}
+  .topbar .brand b{font-weight:600}
+  .star{width:13px;height:13px;color:var(--accent)}
+  .topbar .meta{display:flex;gap:26px;align-items:center}
+  .topbar .meta span{display:flex;gap:7px;align-items:center}
+  .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(211,85,85,.18)}
+
+  .field{position:relative;flex:1;margin-top:6px}
+
+  .headline{position:absolute;left:0;top:54px;max-width:660px;z-index:6;pointer-events:none}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-60);margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .eyebrow::before{content:"";width:42px;height:1px;background:var(--ink-30)}
+  h1{font-size:78px;line-height:.96;letter-spacing:-.035em;font-weight:600}
+  h1 .ltr{display:inline-block;will-change:transform}
+  h1 .accent{color:var(--accent);font-style:italic}
+  .lede{margin-top:26px;max-width:430px;font-size:19px;line-height:1.5;color:#5d5a55;font-weight:380}
+  .lede b{color:var(--ink);font-weight:600}
+  .hint{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-60);
+    margin-top:26px;display:flex;align-items:center;gap:9px;text-transform:uppercase}
+  .hint .k{border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--ink);background:#fbf9f4}
+
+  /* floating nodes */
+  .node{position:absolute;will-change:transform;z-index:7}
+  .work{width:248px;background:#fbf9f4;border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 18px 44px -26px rgba(69,69,69,.6);overflow:hidden;cursor:none;
+    transition:box-shadow .3s,border-color .3s}
+  .work:hover{box-shadow:0 26px 60px -22px rgba(69,69,69,.65);border-color:var(--ink-30);z-index:30}
+  .work .thumb{height:120px;background:
+      repeating-linear-gradient(135deg,#ece5d7 0 12px,#e6dece 12px 24px);
+    position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
+  .work .thumb .ph{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ink-60);
+    text-transform:uppercase;border:1px dashed var(--ink-30);border-radius:30px;padding:6px 12px;background:rgba(251,249,244,.7)}
+  .work .thumb .tag{position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+  .work .body{padding:13px 15px 15px}
+  .work .body .t{font-size:16.5px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+  .work .body .s{font-size:12.5px;color:#6f6c66;margin-top:4px}
+  .work .body .m{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:11px;
+    padding-top:11px;border-top:1px solid var(--line);letter-spacing:.02em;
+    display:flex;justify-content:space-between;align-items:center}
+
+  .chip{font-family:var(--mono);font-size:12.5px;letter-spacing:.01em;padding:9px 15px;
+    border-radius:30px;background:rgba(251,249,244,.85);border:1px solid var(--line);color:var(--ink);
+    white-space:nowrap;box-shadow:0 6px 16px -10px rgba(69,69,69,.5);cursor:none}
+  .epill{font-family:var(--sans);font-weight:600;font-size:15px;letter-spacing:-.01em;
+    padding:11px 20px;border-radius:30px;background:var(--ink);color:var(--paper);white-space:nowrap;
+    box-shadow:0 12px 28px -12px rgba(69,69,69,.8);cursor:none;display:flex;align-items:center;gap:9px;
+    user-select:none}
+  .epill .d{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .epill.alt{background:#fbf9f4;color:var(--ink);border:1px solid var(--accent)}
+  .epill.alt .d{background:var(--accent)}
+
+  /* timeline strip */
+  .strip{position:relative;z-index:10;height:150px;border-top:1px solid var(--line);
+    display:flex;flex-direction:column;justify-content:center;padding:0 4px}
+  .strip-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+  .strip-label{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-60)}
+  .role-now{text-align:right}
+  .role-now .r{font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .role-now .c{font-family:var(--mono);font-size:12px;color:var(--accent);margin-top:2px}
+  .track2{position:relative;height:4px;background:var(--paper-2);border-radius:3px;margin-bottom:14px;cursor:none;
+    box-shadow:0 1px 2px rgba(69,69,69,.12) inset}
+  .track2 .seg{position:absolute;top:0;bottom:0;border-radius:3px;background:rgba(211,85,85,.25)}
+  .track2 .seg.active{background:var(--accent)}
+  .track2 .handle{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#fbf9f4;
+    transform:translate(-50%,-50%);box-shadow:0 3px 8px rgba(69,69,69,.4),0 0 0 1px rgba(255,255,255,.7) inset;z-index:3}
+  .track2 .node-dot{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:var(--ink-30);
+    transform:translate(-50%,-50%)}
+  .years{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-60);letter-spacing:.06em}
+</style>
+</head>
+<body>
+  <div id="ring"></div>
+  <div id="cursor"></div>
+
+  <div class="stage">
+    <div class="topbar">
+      <div class="brand">
+        <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 6 5.4 10.8 11.4 11.4v1.2C17.4 13.2 12.6 18 12 24h-1.2C10.2 18 5.4 13.2-.6 12.6v-1.2C5.4 10.8 10.2 6 10.8 0H12z"/></svg>
+        <b>THERESA KONG</b><span style="color:var(--ink-30)">/</span>SR. PRODUCT DESIGNER
+      </div>
+      <div class="meta">
+        <span><i class="pdot"></i> OPEN TO SENIOR / STAFF ROLES</span>
+        <span>NEW YORK, NY</span>
+      </div>
+    </div>
+
+    <div class="field" id="field">
+      <div class="headline">
+        <div class="eyebrow">A system in motion</div>
+        <h1 id="h1"><span class="line" data-text="Touch one piece."></span><br><span class="line accent" data-text="Everything moves."></span></h1>
+        <p class="lede"><b>Senior product designer.</b> I build multi-sided systems where every part knows about the others. Nothing here sits still — push it, drag it, watch it answer.</p>
+        <div class="hint"><span class="k">DRAG</span> the verbs · <span class="k">HOVER</span> the work</div>
+      </div>
+
+      <!-- work nodes injected, plus static ones below for clarity -->
+    </div>
+
+    <div class="strip">
+      <div class="strip-top">
+        <div class="strip-label">Trajectory · drag to scrub</div>
+        <div class="role-now"><div class="r" id="rn-role">Senior Product Designer</div><div class="c" id="rn-co">TourHero · Sep 2025 — Mar 2026</div></div>
+      </div>
+      <div class="track2" id="track2">
+        <div class="seg" id="seg0"></div><div class="seg" id="seg1"></div><div class="seg" id="seg2"></div>
+        <div class="node-dot" id="nd0"></div><div class="node-dot" id="nd1"></div><div class="node-dot" id="nd2"></div>
+        <div class="handle" id="handle"></div>
+      </div>
+      <div class="years"><span>2020</span><span>2021</span><span>2022</span><span>2023</span><span>2024</span><span>2025</span><span>2026</span></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const field=document.getElementById('field');
+  const cursor=document.getElementById('cursor');
+  const ring=document.getElementById('ring');
+  let mx=-9999,my=-9999;
+
+  // ---- magnetic headline letters ----
+  document.querySelectorAll('#h1 .line').forEach(line=>{
+    const txt=line.dataset.text;
+    line.innerHTML='';
+    [...txt].forEach(ch=>{
+      const s=document.createElement('span');
+      s.className='ltr';s.textContent=ch===' '?'\u00A0':ch;
+      line.appendChild(s);
+    });
+  });
+  const letters=[...document.querySelectorAll('#h1 .ltr')];
+
+  // ---- build floating nodes ----
+  const works=[
+    {tag:'01 · TourHero',t:'Self-Launch ecosystem',s:'AI-assisted customization, 3-sided marketplace',m:'29-day → same-day',hx:1092,hy:14},
+    {tag:'02 · TourHero',t:'0 → 1 consumer journey',s:'Founding designer · readiness portal',m:'−25 hrs / week',hx:735,hy:236},
+    {tag:'03 · Errunds',t:'Grocery taxonomy & nav',s:'3 MVPs · mobile + web',m:'100% task success',hx:1092,hy:340}
+  ];
+  const chips=[
+    {x:560,y:96,txt:'Systems Thinking'},{x:885,y:452,txt:'AI Workflows'},
+    {x:470,y:474,txt:'0 → 1'},{x:1058,y:610,txt:'Design Systems'},
+    {x:842,y:560,txt:'HITL Logic'},{x:872,y:150,txt:'Usability Testing'}
+  ];
+  const epills=[
+    {x:150,y:520,txt:'Experiment',alt:false},
+    {x:355,y:622,txt:'Explore',alt:true},
+    {x:632,y:586,txt:'Experience',alt:false}
+  ];
+
+  const nodes=[];
+  function mk(el,hx,hy,opt={}){
+    el.classList.add('node');el.style.left=hx+'px';el.style.top=hy+'px';
+    field.appendChild(el);
+    nodes.push({el,hx,hy,ox:0,oy:0,vx:0,vy:0,frozen:false,drag:false,
+      mass:opt.mass||1,R:opt.R||230,push:opt.push||1});
+    return nodes[nodes.length-1];
+  }
+
+  works.forEach(w=>{
+    const el=document.createElement('div');el.className='work';
+    el.innerHTML=`<div class="thumb"><span class="tag">${w.tag}</span><span class="ph">Drop case study</span></div>
+      <div class="body"><div class="t">${w.t}</div><div class="s">${w.s}</div>
+      <div class="m"><span>${w.m}</span><span>→</span></div></div>`;
+    const n=mk(el,w.hx,w.hy,{mass:2.4,R:200,push:.5});
+    el.addEventListener('mouseenter',()=>{n.frozen=true;cursor.classList.add('hot');el.style.transform='scale(1.03)';});
+    el.addEventListener('mouseleave',()=>{n.frozen=false;cursor.classList.remove('hot');});
+  });
+
+  chips.forEach(c=>{
+    const el=document.createElement('div');el.className='chip';el.textContent=c.txt;
+    const n=mk(el,c.x,c.y,{mass:.7,R:200,push:1.5});
+    el.addEventListener('mouseenter',()=>cursor.classList.add('hot'));
+    el.addEventListener('mouseleave',()=>cursor.classList.remove('hot'));
+  });
+
+  epills.forEach(p=>{
+    const el=document.createElement('div');el.className='epill'+(p.alt?' alt':'');
+    el.innerHTML=`<span class="d"></span>${p.txt}`;
+    const n=mk(el,p.x,p.y,{mass:1.1,R:170,push:1.1});
+    el.addEventListener('mouseenter',()=>!n.drag&&cursor.classList.add('hot'));
+    el.addEventListener('mouseleave',()=>!n.drag&&cursor.classList.remove('hot'));
+    el.addEventListener('pointerdown',e=>{
+      e.preventDefault();n.drag=true;el.setPointerCapture(e.pointerId);
+      cursor.classList.add('grab');ring.style.opacity='0';
+      n.grabX=e.clientX-(n.hx+n.ox);n.grabY=e.clientY-(n.hy+n.oy);
+      el.style.zIndex=40;
+    });
+    el.addEventListener('pointermove',e=>{
+      if(!n.drag)return;
+      n.ox=e.clientX-n.grabX-n.hx;n.oy=e.clientY-n.grabY-n.hy;n.vx=0;n.vy=0;
+    });
+    const rel=e=>{if(!n.drag)return;n.drag=false;cursor.classList.remove('grab');el.style.zIndex='';};
+    el.addEventListener('pointerup',rel);el.addEventListener('pointercancel',rel);
+  });
+
+  // ---- pointer ----
+  window.addEventListener('mousemove',e=>{
+    mx=e.clientX;my=e.clientY;
+    ring.style.left=mx+'px';ring.style.top=my+'px';
+  });
+  field.addEventListener('mouseenter',()=>ring.style.opacity='1');
+  field.addEventListener('mouseleave',()=>ring.style.opacity='0');
+  let cxp=720,cyp=500;
+  function curLoop(){cxp+=(mx-cxp)*.3;cyp+=(my-cyp)*.3;
+    cursor.style.left=cxp+'px';cursor.style.top=cyp+'px';requestAnimationFrame(curLoop);}
+  curLoop();
+
+  // ---- physics ----
+  function phys(){
+    const fr=field.getBoundingClientRect();
+    const lmx=mx-fr.left, lmy=my-fr.top;
+    for(const n of nodes){
+      if(n.drag) {n.el.style.transform=`translate(${n.ox}px,${n.oy}px)`;continue;}
+      // spring home
+      let ax=-n.ox*0.012, ay=-n.oy*0.012;
+      // repel from cursor (node center approx)
+      const w=n.el.offsetWidth, h=n.el.offsetHeight;
+      const cxn=n.hx+n.ox+w/2, cyn=n.hy+n.oy+h/2;
+      let dx=cxn-lmx, dy=cyn-lmy, dist=Math.hypot(dx,dy)||1;
+      if(dist<n.R && !n.frozen){
+        const f=(1-dist/n.R)*4.2*n.push/n.mass;
+        ax+=dx/dist*f; ay+=dy/dist*f;
+      }
+      n.vx=(n.vx+ax)*0.86; n.vy=(n.vy+ay)*0.86;
+      n.ox+=n.vx; n.oy+=n.vy;
+      if(!n.el.classList.contains('work')||!n.frozen)
+        n.el.style.transform=`translate(${n.ox}px,${n.oy}px)`;
+    }
+    // magnetic letters
+    for(const L of letters){
+      const r=L.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      let dx=cx-mx, dy=cy-my, d=Math.hypot(dx,dy);
+      const R=160;
+      if(d<R){const f=(1-d/R)*18; L.style.transform=`translate(${dx/d*f}px,${dy/d*f}px)`;}
+      else L.style.transform='';
+    }
+    requestAnimationFrame(phys);
+  }
+  phys();
+
+  // ---- timeline scrub ----
+  const roles=[
+    {a:5.66,b:6.25,role:'Senior Product Designer',co:'TourHero · Sep 2025 — Mar 2026'}, // 2025.66..2026.25
+    {a:1.66,b:5.66,role:'Product Designer',co:'TourHero · Sep 2021 — Sep 2025'},
+    {a:0.0,b:1.66,role:'UX / UI Designer',co:'Errunds · Jan 2020 — Aug 2021'}
+  ];
+  // map year 2020..2026 => 0..1  (span 6 yrs)
+  const Y0=0,Y1=6;
+  const toPct=y=>(y-Y0)/(Y1-Y0)*100;
+  const track=document.getElementById('track2');
+  // segments
+  document.getElementById('seg2').style.left=toPct(0)+'%';document.getElementById('seg2').style.width=(toPct(1.66)-toPct(0))+'%';
+  document.getElementById('seg1').style.left=toPct(1.66)+'%';document.getElementById('seg1').style.width=(toPct(5.66)-toPct(1.66))+'%';
+  document.getElementById('seg0').style.left=toPct(5.66)+'%';document.getElementById('seg0').style.width=(toPct(6.0)-toPct(5.66))+'%';
+  document.getElementById('nd2').style.left=toPct(0.8)+'%';
+  document.getElementById('nd1').style.left=toPct(3.6)+'%';
+  document.getElementById('nd0').style.left=toPct(5.83)+'%';
+  const handle=document.getElementById('handle');
+  function setScrub(pct){
+    pct=Math.max(0,Math.min(100,pct));
+    handle.style.left=pct+'%';
+    const year=Y0+pct/100*(Y1-Y0);
+    let active=roles.find(r=>year>=r.a&&year<=r.b)||roles[0];
+    document.getElementById('rn-role').textContent=active.role;
+    document.getElementById('rn-co').textContent=active.co;
+    ['seg0','seg1','seg2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',roles[i]===active));
+  }
+  setScrub(toPct(5.9));
+  let tdrag=false;
+  function scrubAt(e){const r=track.getBoundingClientRect();setScrub((e.clientX-r.left)/r.width*100);}
+  track.addEventListener('pointerdown',e=>{tdrag=true;track.setPointerCapture(e.pointerId);scrubAt(e);cursor.classList.add('grab');});
+  track.addEventListener('pointermove',e=>{if(tdrag)scrubAt(e);});
+  const tup=()=>{tdrag=false;cursor.classList.remove('grab');};
+  track.addEventListener('pointerup',tup);track.addEventListener('pointercancel',tup);
+  track.addEventListener('mouseenter',()=>cursor.classList.add('hot'));
+  track.addEventListener('mouseleave',()=>{if(!tdrag)cursor.classList.remove('hot');});
+})();
+</script>
+</body>
+</html>
