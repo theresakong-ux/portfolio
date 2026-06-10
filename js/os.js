@@ -469,6 +469,20 @@
     updateAllFolders();
   }
 
+  /* ---------- replace-photo overlay buttons ---------- */
+  // .rp-btn[data-replace-slot="<slot-id>"] → opens the file picker for that slot
+  document.addEventListener('click', e => {
+    const btn = e.target.closest && e.target.closest('.rp-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const slotId = btn.dataset.replaceSlot;
+    if (!slotId) return;
+    const slot = document.getElementById(slotId);
+    if (!slot || !slot.shadowRoot) return;
+    const input = slot.shadowRoot.querySelector('input[type=file]');
+    if (input) input.click();
+  }, true);
+
   /* ---------- keep things on-screen on resize ---------- */
   window.addEventListener('resize', () => {
     $$('.icon').forEach(ic => {

@@ -17,13 +17,13 @@
   --ink:#454545; --ink-soft:#8b887f; --ink-faint:#b5b2a8;
   --edge:rgba(69,69,69,.12); --edge-soft:rgba(69,69,69,.07);
   --accent:#d35555; --accent-deep:#b8413f; --on-accent:#fff;
-  --shadow:rgba(60,55,45,.18);
+  --shadow:rgba(60,55,45,.11);
   /* liquid glass */
   --glass:rgba(255,255,255,.42);
   --glass-2:rgba(255,255,255,.6);
   --glass-brd:rgba(255,255,255,.72);
   --glass-rim:rgba(255,255,255,.9);
-  --glass-shadow:rgba(60,55,45,.24);
+  --glass-shadow:rgba(60,55,45,.14);
   --menu-ink:#454545;
   --sticky-yellow:#f4e08a; --sticky-yellow-ink:#5b4e1f;
   --note:#fbfaf7;
@@ -109,19 +109,14 @@ body{
   pointer-events:none;
   isolation:isolate;
   background:transparent;
-  backdrop-filter:blur(28px) saturate(180%);
-  -webkit-backdrop-filter:blur(28px) saturate(180%);
-  box-shadow:
-    inset 0 -1px 0 color-mix(in oklab,var(--glass-brd) 50%,transparent),
-    0 2px 24px -10px var(--glass-shadow);
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
   border-radius:0;
 }
-/* top sheen from the screen frame */
-.menubar::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:linear-gradient(180deg,color-mix(in oklab,#fff 8%,transparent),transparent 55%)}
-/* subtle bottom-edge glow */
-.menubar::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  box-shadow:inset 0 1px 0 color-mix(in oklab,#fff 55%,transparent)}
+/* thin frosted rim on the bottom edge only — liquid glass edge effect */
+.menubar::before{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.45) 20%,rgba(255,255,255,.45) 80%,transparent 100%)}
+.menubar::after{display:none}
 .mb-pill{
   pointer-events:auto;display:flex;align-items:center;gap:13px;
   color:var(--menu-ink);
@@ -371,15 +366,30 @@ body{
   transition:transform .22s cubic-bezier(.2,.85,.3,1)}
 /* the shadow lives behind the cover and shifts with the tilt (--shx/--shy) */
 .thumb-deck::before{content:"";position:absolute;inset:0;border-radius:18px;z-index:0;
-  background:radial-gradient(120% 120% at 50% 50%,rgba(40,28,18,.55),rgba(40,28,18,.32) 55%,transparent 78%);
+  background:radial-gradient(120% 120% at 50% 50%,rgba(40,28,18,.32),rgba(40,28,18,.18) 55%,transparent 78%);
   filter:blur(20px);opacity:0;transform:translate(0,10px) scale(.9);
   transition:opacity .22s var(--ease),transform .22s cubic-bezier(.2,.85,.3,1)}
-.proj-card:hover .thumb-deck::before{opacity:.6;
+.proj-card:hover .thumb-deck::before{opacity:.55;
   transform:translate(var(--shx,0px),var(--shy,24px)) scale(.96)}
 .thumb-deck .front{position:absolute;inset:0;width:100%;height:100%;display:block;
   border-radius:14px;overflow:hidden;z-index:5;box-shadow:0 14px 30px -18px var(--shadow)}
 .proj-card:hover .thumb-deck{transform:scale(1.12) rotate(-4deg)}
 .proj-card:hover .thumb-deck .front{box-shadow:0 30px 56px -20px var(--shadow)}
+
+/* replace-photo overlay button */
+.rp-btn{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%) translateY(4px);
+  padding:5px 13px;border-radius:999px;border:none;
+  background:rgba(0,0,0,.58);color:#fff;font-family:inherit;font-size:11px;font-weight:600;
+  cursor:pointer;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  opacity:0;transition:opacity .15s,transform .15s;pointer-events:none;z-index:10;letter-spacing:.02em;
+}
+.proj-thumb:hover .rp-btn{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.case-hero .rp-btn{
+  bottom:auto;top:50%;transform:translate(-50%,-50%) scale(.9);
+  font-size:12px;padding:7px 16px;
+}
+.case-hero:hover .rp-btn{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
 
 .proj-meta{min-width:0;transition:transform .22s cubic-bezier(.2,.85,.3,1)}
 .proj-card:hover .proj-meta{transform:translateX(12px)}
@@ -689,21 +699,21 @@ body{
       <div class="proj-card" data-open="proj-tourhero">
         <div class="proj-thumb"><div class="thumb-deck">
           <image-slot class="front" id="th-tourhero" radius="14" placeholder="Cover"></image-slot>
-        </div></div>
+        </div><button class="rp-btn" data-replace-slot="th-tourhero">Replace photo</button></div>
         <div class="proj-meta">
           <div class="pc-top"><h4>TourHero <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
           <div class="proj-tags">
-            <span class="tag">3-sided marketplace</span>
-            <span class="tag">0→1 architecture</span>
-            <span class="tag">AI-assisted planning</span>
-            <span class="tag">Design systems</span>
+            <span class="tag">Form-to-Assistant Automation</span>
+            <span class="tag">Intent-Driven Logic Architecture</span>
+            <span class="tag">Dynamic Flow & Exception Handling</span>
+            <span class="tag">Automated Generation Framework</span>
           </div>
         </div>
       </div>
       <div class="proj-card" data-open="proj-errunds">
         <div class="proj-thumb"><div class="thumb-deck">
           <image-slot class="front" id="th-errunds" radius="14" placeholder="Cover" src="./uploads/errunds-cover-phones-altogether.svg"></image-slot>
-        </div></div>
+        </div><button class="rp-btn" data-replace-slot="th-errunds">Replace photo</button></div>
         <div class="proj-meta">
           <div class="pc-top"><h4>Errunds <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
           <div class="proj-tags">
@@ -717,7 +727,7 @@ body{
       <div class="proj-card" data-open="proj-figma">
         <div class="proj-thumb"><div class="thumb-deck">
           <image-slot class="front" id="th-figma" radius="14" placeholder="Cover"></image-slot>
-        </div></div>
+        </div><button class="rp-btn" data-replace-slot="th-figma">Replace photo</button></div>
         <div class="proj-meta">
           <div class="pc-top"><h4>Figma Plugin <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
           <div class="proj-tags">
@@ -730,7 +740,7 @@ body{
       <div class="proj-card" data-open="proj-3dme">
         <div class="proj-thumb"><div class="thumb-deck">
           <image-slot class="front" id="th-3dme" radius="14" placeholder="Cover"></image-slot>
-        </div></div>
+        </div><button class="rp-btn" data-replace-slot="th-3dme">Replace photo</button></div>
         <div class="proj-meta">
           <div class="pc-top"><h4>3D Me <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
           <div class="proj-tags">
@@ -747,18 +757,20 @@ body{
 
 <template id="tmpl-proj-tourhero">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-tourhero" placeholder="Drop a TourHero hero image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-tourhero" placeholder="Drop a TourHero hero image"></image-slot><button class="rp-btn" data-replace-slot="hero-tourhero">Replace photo</button></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · 0→1 Marketplace</span>
-      <h2 class="wtitle">TourHero</h2>
+      <h2 class="wtitle">TourHero: Plan a trip</h2>
       <p class="wsub">A three-sided travel marketplace where travelers find trips, local "TourHeroes" lead them, and operators run them. I directed the end-to-end design architecture connecting all three.</p>
     </div>
     <div class="meta-row">
       <span class="chip mono">Senior Product Designer</span>
       <span class="chip mono">Sep 2025 – Mar 2026</span>
-      <span class="chip hi mono">3-sided marketplace</span>
-      <span class="chip hi mono">AI-assisted planning</span>
+      <span class="chip hi mono">Form-to-Assistant Automation</span>
+      <span class="chip hi mono">Intent-Driven Logic Architecture</span>
+      <span class="chip hi mono">Dynamic Flow & Exception Handling</span>
+      <span class="chip hi mono">Automated Generation Framework</span>
     </div>
     <div class="spine">
       <div class="step"><div class="sidx mono">EMPATHIZE<span class="n">01</span></div><div>
@@ -794,7 +806,7 @@ body{
 
 <template id="tmpl-proj-errunds">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-errunds" placeholder="Drop an Errunds hero image" src="./uploads/cover-phone-1.svg"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-errunds" placeholder="Drop an Errunds hero image" src="./uploads/cover-phone-1.svg"></image-slot><button class="rp-btn" data-replace-slot="hero-errunds">Replace photo</button></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · Discovery & IA</span>
@@ -841,7 +853,7 @@ body{
 
 <template id="tmpl-proj-figma">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-figma" placeholder="Drop a cover image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-figma" placeholder="Drop a cover image"></image-slot><button class="rp-btn" data-replace-slot="hero-figma">Replace photo</button></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · Tool · Maker</span>
@@ -859,7 +871,7 @@ body{
 
 <template id="tmpl-proj-3dme">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-3dme" placeholder="Drop a cover image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-3dme" placeholder="Drop a cover image"></image-slot><button class="rp-btn" data-replace-slot="hero-3dme">Replace photo</button></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Concept · 3D · Play</span>

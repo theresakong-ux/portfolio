@@ -73,11 +73,21 @@
   let loaded = false;
   let loadP = null;
 
+  const LS_KEY = 'tk.imageslots.v1';
+  function lsLoad() {
+    try { const s = localStorage.getItem(LS_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+  }
+  function lsSave() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(slots)); } catch {}
+  }
+
   function load() {
     if (loadP) return loadP;
     loadP = fetch(STATE_FILE)
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
+        // Fall back to localStorage when sidecar is absent (e.g. GitHub Pages)
+        if (!j) j = lsLoad();
         // Merge: sidecar loses to any in-memory change that raced ahead of
         // the fetch (drop or clear) so neither is clobbered by hydration.
         if (j && typeof j === 'object') {
@@ -108,6 +118,7 @@
   let saveDirty = false;
   function save() {
     if (saving) { saveDirty = true; return; }
+    lsSave(); // mirror to localStorage for non-omelette hosts (GitHub Pages)
     const w = window.omelette && window.omelette.writeFile;
     if (!w) return;
     saving = true;
