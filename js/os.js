@@ -1,6 +1,6 @@
 /* ============================================================
    Theresa Kong — Desktop OS engine
-   drag · hover-tilt · window manager · guest book · theme · corgi
+   drag · hover-tilt · window manager · theme · corgi
    ============================================================ */
 (() => {
   'use strict';
@@ -22,11 +22,15 @@
   }
   tick(); setInterval(tick, 10000);
 
-  /* ---------- icon positions (persist) ---------- */
+  /* ---------- icon positions (persist + responsive) ---------- */
   const POS = LS.get('tk.iconpos.v3', {});
+  // The authored coords are tuned for a ~1440px-wide canvas. Capture them once
+  // (before any clamp/anchor overwrites the inline style) so layoutIcon can
+  // re-anchor the right-side cluster to the live viewport on load and resize.
+  const DESIGN_W = 1440;
   $$('.icon').forEach(ic => {
-    const p = POS[ic.id];
-    if (p) { ic.style.left = p.x + 'px'; ic.style.top = p.y + 'px'; }
+    ic._dx = parseFloat(ic.style.left) || 0;
+    ic._dy = parseFloat(ic.style.top) || 0;
   });
   function saveIconPos(ic) {
     POS[ic.id] = { x: parseFloat(ic.style.left), y: parseFloat(ic.style.top) };
@@ -44,7 +48,7 @@
     let sx, sy, ox, oy, moved, dragging = false;
     handle.addEventListener('pointerdown', e => {
       if (e.button !== 0) return;
-      if (e.target.closest('input,textarea,button,a,.sw,.lights .c')) return;
+      if (e.target.closest('input,textarea,button,a,.sw,.lights span,.rz')) return;
       dragging = true; moved = false;
       sx = e.clientX; sy = e.clientY;
       ox = parseFloat(el.style.left) || el.offsetLeft;
@@ -79,15 +83,32 @@
   /* ---------- icons: drag + hover tilt + open ---------- */
   const iconBounds = el => ({
     minX: 4, minY: 52,
-    maxX: window.innerWidth - el.offsetWidth - 4,
-    maxY: window.innerHeight - el.offsetHeight - 4
+    maxX: Math.max(4, window.innerWidth - el.offsetWidth - 4),
+    maxY: Math.max(52, window.innerHeight - el.offsetHeight - 4)
   });
 
+  // Place one icon for the current viewport. A user-dragged icon keeps its
+  // saved spot; otherwise icons authored on the right half are pinned to the
+  // viewport's right edge (so the folder cluster stays visible as the window
+  // shrinks) and the rest keep their authored offset. Everything is clamped
+  // on-screen at the end.
+  function layoutIcon(ic) {
+    const saved = POS[ic.id];
+    if (saved) {
+      ic.style.left = saved.x + 'px'; ic.style.top = saved.y + 'px';
+    } else if (ic._dx > DESIGN_W * 0.5) {
+      ic.style.left = (window.innerWidth - (DESIGN_W - ic._dx)) + 'px';
+      ic.style.top = ic._dy + 'px';
+    } else {
+      ic.style.left = ic._dx + 'px'; ic.style.top = ic._dy + 'px';
+    }
+    const b = iconBounds(ic);
+    ic.style.left = clamp(parseFloat(ic.style.left) || 0, b.minX, b.maxX) + 'px';
+    ic.style.top = clamp(parseFloat(ic.style.top) || 0, b.minY, b.maxY) + 'px';
+  }
+
   $$('.icon').forEach(ic => {
-    // keep newly-defaulted positions on-screen for narrower viewports
-    const b0 = iconBounds(ic);
-    ic.style.left = clamp(parseFloat(ic.style.left) || 0, b0.minX, b0.maxX) + 'px';
-    ic.style.top = clamp(parseFloat(ic.style.top) || 0, b0.minY, b0.maxY) + 'px';
+    layoutIcon(ic);
 
     const openable = !ic.hasAttribute('data-noopen');
     makeDraggable(ic, ic, {
@@ -112,13 +133,16 @@
   /* ---------- window manager ---------- */
   const host = $('#winHost');
   const openWins = new Map(); // key -> el
+  // shared open/close timings (seconds) — open and close mirror each other;
+  // kept snappy. `fly`/`shoot` are the directional travel, `pop`/`settle` the
+  // small overshoot beat on either end.
+  const ANIM = { fly: 0.30, settle: 0.07, pop: 0.07, shoot: 0.30 };
   const WIN_SIZE = {
-    about:     { w: 600, h: 540 },
+    about:     { w: 540, h: 480 },
     work:      { w: 760, h: 620 },
     photo:     { w: 720, h: 600 },
     dotb:      { w: 760, h: 600 },
-    guestbook: { w: 820, h: 560 },
-    resume:    { w: 640, h: 560 },
+    resume:    { w: 700, h: 860 },
     'proj-tourhero': { w: 720, h: 680 },
     'proj-errunds':  { w: 720, h: 680 },
     'proj-figma':    { w: 680, h: 600 },
@@ -126,7 +150,7 @@
   };
   const WIN_TITLE = {
     about: 'About', work: 'Work', photo: 'Photography', dotb: 'Do Outside the Box',
-    guestbook: 'Guest Book', resume: 'resume.pdf',
+    resume: 'resume.pdf',
     'proj-tourhero': 'Work / TourHero', 'proj-errunds': 'Work / Errunds',
     'proj-figma': 'Work / Figma Plugin', 'proj-3dme': 'Work / 3D Me',
   };
@@ -136,7 +160,10 @@
   function openWindow(key, originEl) {
     if (openWins.has(key)) {
       const w = openWins.get(key);
-      if (w && document.body.contains(w)) { bump(w); pulse(w); return; }
+      if (w && document.body.contains(w)) {
+        if (w.dataset.min) restoreWindow(w); // bring a minimized window back
+        bump(w); pulse(w); return;
+      }
       openWins.delete(key); // stale ref — fall through and recreate
     }
     const tmpl = $('#tmpl-' + key);
@@ -145,10 +172,17 @@
     const large = LARGE.has(key);
     let w, h, left, top;
     if (large) {
-      w = Math.round(window.innerWidth * 0.9);
-      h = Math.round(window.innerHeight * 0.9);
+      // narrower, responsive, centred — capped so it never sprawls on wide screens
+      const MB = 48, GAP = 22;
+      w = clamp(Math.round(window.innerWidth * 0.74), 560, 1060);
+      h = clamp(Math.round(window.innerHeight * 0.84), 420, window.innerHeight - MB - GAP * 2);
       left = Math.round((window.innerWidth - w) / 2);
-      top = Math.round((window.innerHeight - h) / 2);
+      top = clamp(Math.round((window.innerHeight - h) / 2), MB + GAP, window.innerHeight - h - GAP);
+    } else if (key === 'about') {
+      w = Math.min(size.w, window.innerWidth - 32);
+      h = Math.min(size.h, window.innerHeight - 80);
+      left = 24;
+      top = 68;
     } else {
       w = Math.min(size.w, window.innerWidth - 32);
       h = Math.min(size.h, window.innerHeight - 80);
@@ -163,12 +197,11 @@
     win.style.left = left + 'px'; win.style.top = top + 'px';
     win.style.width = w + 'px'; win.style.height = h + 'px';
 
-    // transform origin toward the icon that opened it
-    if (originEl) {
-      const r = originEl.getBoundingClientRect();
-      win.style.setProperty('--ox', clamp(r.left + r.width / 2 - left, 0, w) + 'px');
-      win.style.setProperty('--oy', clamp(r.top + r.height / 2 - top, 0, h) + 'px');
-    }
+    // remember the icon that opened this window (fall back to the desktop icon
+    // for this key — e.g. About opens on load with no originEl) so both the
+    // open and close animations can fly to/from the folder's position.
+    let orig = originEl || document.querySelector('.icon[data-open="' + key + '"]');
+    win._originEl = orig || null;
 
     const titleLabel = WIN_TITLE[key] || '';
     const pathHtml = titleLabel.includes(' / ')
@@ -177,18 +210,41 @@
 
     win.innerHTML =
       `<div class="bar">
-         <div class="lights"><span class="c" title="Close"></span><span class="y"></span><span class="g"></span></div>
+         <div class="lights"><span class="c" title="Close"></span><span class="y" title="Minimize"></span><span class="g" title="Zoom"></span></div>
          <div class="wt">${pathHtml}</div>
        </div>
-       <div class="body"></div>`;
+       <div class="body"></div>
+       <div class="rz rz-n"></div><div class="rz rz-s"></div><div class="rz rz-e"></div><div class="rz rz-w"></div>
+       <div class="rz rz-ne"></div><div class="rz rz-nw"></div><div class="rz rz-se"></div><div class="rz rz-sw"></div>`;
     $('.body', win).appendChild(tmpl.content.cloneNode(true));
     host.appendChild(win);
     openWins.set(key, win);
     bump(win);
     setRunning(key, true);
 
-    // close
-    $('.lights .c', win).addEventListener('click', () => closeWindow(key));
+    // Directional open — the inverse of close: the window springs out FROM its
+    // folder, flying in along the folder→window vector while enlarging, then a
+    // tiny settle. Mirrors closeWindow() so open/close feel like one motion.
+    if (orig && document.body.contains(orig) && window.gsap) {
+      const ir = orig.getBoundingClientRect();
+      const wr = win.getBoundingClientRect();
+      const dx = (ir.left + ir.width / 2) - (wr.left + wr.width / 2);
+      const dy = (ir.top + ir.height / 2) - (wr.top + wr.height / 2);
+      win.style.animation = 'none'; // disable the CSS winIn so GSAP owns transform
+      win.style.transformOrigin = '50% 50%';
+      gsap.killTweensOf(win);
+      gsap.timeline()
+        .fromTo(win,
+          { x: dx, y: dy, scale: 0.04, opacity: 0 },
+          { x: 0, y: 0, scale: 1.03, opacity: 1, duration: ANIM.fly, ease: 'power3.out' })
+        .to(win, { scale: 1, duration: ANIM.settle, ease: 'power2.out' });
+    }
+
+    // traffic lights: close / minimize / zoom
+    $('.lights .c', win).addEventListener('click', (e) => { e.stopPropagation(); closeWindow(key); });
+    $('.lights .y', win).addEventListener('click', (e) => { e.stopPropagation(); minimizeWindow(win); });
+    $('.lights .g', win).addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(win); });
+    makeResizable(win);
     win.addEventListener('pointerdown', () => bump(win));
 
     // drag by titlebar
@@ -213,8 +269,6 @@
       closeWindow(key);
     }));
 
-    // guest book wiring
-    if (key === 'guestbook') initGuestbook(win);
     // work covers: cursor-tracked 3D tilt
     if (key === 'work') initWorkTilt(win);
     // case-study hero: mirror the project cover as a removable default
@@ -280,16 +334,122 @@
     const win = openWins.get(key);
     if (!win) return;
     if (win._heroUnsub) { win._heroUnsub(); win._heroUnsub = null; }
-    win.classList.add('closing');
     openWins.delete(key);
     setRunning(key, false);
-    setTimeout(() => win.remove(), 440);
+
+    // Prefer the icon that opened this window; otherwise fall back to the
+    // desktop icon for this key (e.g. About, which opens on load) so the
+    // window still shoots toward its folder.
+    let orig = win._originEl;
+    if (!orig || !document.body.contains(orig)) {
+      orig = document.querySelector('.icon[data-open="' + key + '"]');
+    }
+    if (orig && document.body.contains(orig) && window.gsap) {
+      // Shoot the window toward its folder: a tiny anticipatory pop, then it
+      // shrinks and flies in the direction of the folder's position, landing
+      // right where the folder sits — the inverse of the open-from-folder pop.
+      const ir = orig.getBoundingClientRect();
+      const wr = win.getBoundingClientRect();
+      const dx = (ir.left + ir.width / 2) - (wr.left + wr.width / 2);
+      const dy = (ir.top + ir.height / 2) - (wr.top + wr.height / 2);
+      win.style.transition = 'none';
+      // Clear the winIn keyframe animation — with fill:both it locks the final
+      // transform and would override GSAP's inline transform otherwise.
+      win.style.animation = 'none';
+      win.style.transformOrigin = '50% 50%';
+      gsap.killTweensOf(win);
+      gsap.timeline({ onComplete: () => win.remove() })
+        .to(win, { scale: 1.03, duration: ANIM.pop, ease: 'power2.out' })
+        .to(win, { x: dx, y: dy, scale: 0.04, opacity: 0,
+                   duration: ANIM.shoot, ease: 'power3.in' });
+    } else {
+      win.classList.add('closing');
+      setTimeout(() => win.remove(), 440);
+    }
   }
   function pulse(win) {
     win.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(1.015)' }, { transform: 'scale(1)' }],
       { duration: 240, easing: 'ease-out' }
     );
+  }
+
+  /* ---------- minimize / restore (yellow light) ---------- */
+  function minimizeWindow(win) {
+    win.dataset.min = '1';
+    win.style.transition = 'transform .3s var(--ease), opacity .3s var(--ease)';
+    win.style.transformOrigin = '50% 100%';
+    win.style.transform = 'scale(.35) translateY(70vh)';
+    win.style.opacity = '0';
+    win.style.pointerEvents = 'none';
+    setTimeout(() => { if (win.dataset.min) win.style.visibility = 'hidden'; }, 300);
+  }
+  function restoreWindow(win) {
+    delete win.dataset.min;
+    win.style.visibility = '';
+    win.style.pointerEvents = '';
+    win.style.transition = 'transform .34s var(--spring), opacity .3s var(--ease)';
+    win.style.transform = '';
+    win.style.opacity = '1';
+    setTimeout(() => { win.style.transition = ''; }, 360);
+  }
+
+  /* ---------- zoom: toggle maximize / restore (green light) ---------- */
+  function toggleZoom(win) {
+    const MB = 48, GAP = 14;
+    win.style.transition = 'left .3s var(--ease), top .3s var(--ease), width .3s var(--ease), height .3s var(--ease)';
+    if (win.dataset.zoom) {
+      win.style.left = win.dataset.pl; win.style.top = win.dataset.pt;
+      win.style.width = win.dataset.pw; win.style.height = win.dataset.ph;
+      delete win.dataset.zoom;
+    } else {
+      win.dataset.pl = win.style.left; win.dataset.pt = win.style.top;
+      win.dataset.pw = win.style.width; win.dataset.ph = win.style.height;
+      win.style.left = GAP + 'px'; win.style.top = (MB + GAP) + 'px';
+      win.style.width = (window.innerWidth - GAP * 2) + 'px';
+      win.style.height = (window.innerHeight - MB - GAP * 2) + 'px';
+      win.dataset.zoom = '1';
+    }
+    setTimeout(() => { win.style.transition = ''; }, 320);
+  }
+
+  /* ---------- drag-the-edges to resize ---------- */
+  function makeResizable(win) {
+    const MIN_W = 360, MIN_H = 260;
+    $$('.rz', win).forEach(handle => {
+      const dir = (handle.className.match(/rz-([a-z]+)/) || [])[1] || '';
+      const E = dir.includes('e'), W = dir.includes('w'), S = dir.includes('s'), N = dir.includes('n');
+      handle.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        bump(win);
+        delete win.dataset.zoom; // a manual resize ends the zoomed state
+        try { handle.setPointerCapture(e.pointerId); } catch {}
+        const r = win.getBoundingClientRect();
+        const sx = e.clientX, sy = e.clientY, x0 = r.left, y0 = r.top, w0 = r.width, h0 = r.height;
+        win.style.transition = 'none';
+        const move = ev => {
+          const dx = ev.clientX - sx, dy = ev.clientY - sy;
+          let nx = x0, ny = y0, nw = w0, nh = h0;
+          if (E) nw = Math.max(MIN_W, w0 + dx);
+          if (W) { nw = Math.max(MIN_W, w0 - dx); nx = x0 + (w0 - nw); }
+          if (S) nh = Math.max(MIN_H, h0 + dy);
+          if (N) { nh = Math.max(MIN_H, h0 - dy); ny = y0 + (h0 - nh); }
+          win.style.left = nx + 'px'; win.style.top = ny + 'px';
+          win.style.width = nw + 'px'; win.style.height = nh + 'px';
+        };
+        const up = () => {
+          try { handle.releasePointerCapture(e.pointerId); } catch {}
+          handle.removeEventListener('pointermove', move);
+          handle.removeEventListener('pointerup', up);
+          handle.removeEventListener('pointercancel', up);
+          win.style.transition = '';
+        };
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', up);
+        handle.addEventListener('pointercancel', up);
+      });
+    });
   }
 
   // Esc closes top window
@@ -332,82 +492,6 @@
     });
   }
 
-  /* ---------- Guest Book ---------- */
-  const GB_COLORS = ['#d35555', '#e8943b', '#e9c64a', '#6fae6f', '#4f93c4', '#7a6fc4', '#c46fa8', '#454545'];
-  const SEED = [
-    { name: 'Maya', msg: 'Wandered in, started dragging everything around. Delightful.', color: '#6fae6f', t: Date.now() - 864e5 * 5 },
-    { name: 'Dev', msg: 'The guest book got me. Signing in cobalt ✦', color: '#4f93c4', t: Date.now() - 864e5 * 2 },
-    { name: 'Priya', msg: 'Found Breadloaf. Stayed for the work.', color: '#e8943b', t: Date.now() - 864e5 },
-  ];
-  function gbAll() { return LS.get('tk.guestbook', SEED.slice()); }
-
-  function initGuestbook(win) {
-    const swWrap = $('#gb-swatches', win);
-    let chosen = GB_COLORS[0];
-    GB_COLORS.forEach((c, i) => {
-      const s = document.createElement('span');
-      s.className = 'sw' + (i === 0 ? ' on' : '');
-      s.style.background = c; s.dataset.c = c;
-      s.addEventListener('click', () => {
-        chosen = c;
-        $$('.sw', swWrap).forEach(x => x.classList.toggle('on', x === s));
-      });
-      swWrap.appendChild(s);
-    });
-
-    const sigsEl = $('#gb-sigs', win), nEl = $('#gb-n', win);
-    function render() {
-      const all = gbAll();
-      nEl.textContent = all.length;
-      sigsEl.innerHTML = '';
-      all.slice().reverse().forEach(s => {
-        const el = document.createElement('div');
-        el.className = 'sig'; el.style.setProperty('--sig', s.color);
-        const date = new Date(s.t);
-        el.innerHTML =
-          `<div class="sig-top"><span class="sig-dot"></span><span class="sig-name"></span></div>
-           ${s.msg ? '<div class="sig-msg"></div>' : ''}
-           <div class="sig-date mono">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>`;
-        $('.sig-name', el).textContent = s.name;
-        if (s.msg) $('.sig-msg', el).textContent = s.msg;
-        sigsEl.appendChild(el);
-      });
-    }
-    render();
-
-    $('#gb-submit', win).addEventListener('click', () => {
-      const name = $('#gb-name', win).value.trim();
-      if (!name) { const i = $('#gb-name', win); i.focus(); i.style.borderColor = chosen; shake(i); return; }
-      const msg = $('#gb-msg', win).value.trim();
-      const all = gbAll();
-      all.push({ name, msg, color: chosen, t: Date.now() });
-      LS.set('tk.guestbook', all);
-      $('#gb-name', win).value = ''; $('#gb-msg', win).value = '';
-      render();
-      // celebratory paint splash near the button
-      splash(chosen, $('#gb-submit', win));
-    });
-  }
-  function shake(el) {
-    el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' },
-      { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 });
-  }
-  function splash(color, btn) {
-    const r = btn.getBoundingClientRect();
-    for (let i = 0; i < 10; i++) {
-      const d = document.createElement('span');
-      const sz = 6 + Math.random() * 10;
-      d.style.cssText = `position:fixed;z-index:99999;border-radius:50%;pointer-events:none;
-        width:${sz}px;height:${sz}px;background:${color};left:${r.left + r.width / 2}px;top:${r.top}px;`;
-      document.body.appendChild(d);
-      const ang = Math.random() * Math.PI * 2, dist = 30 + Math.random() * 70;
-      d.animate([{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
-        { transform: `translate(${Math.cos(ang) * dist - 50}%,${Math.sin(ang) * dist - 50}%) scale(0)`, opacity: 0 }],
-        { duration: 600 + Math.random() * 300, easing: 'cubic-bezier(.2,.7,.3,1)' })
-        .onfinish = () => d.remove();
-    }
-  }
-
   /* ---------- hint auto-hide ---------- */
   const hint = $('#hint');
   let hintHidden = false;
@@ -424,13 +508,27 @@
     'ic-photo': ['ph-1', 'ph-2', 'ph-3', 'ph-4', 'ph-5', 'ph-6'],
     'ic-dotb':  ['d-1', 'd-2', 'd-3', 'd-4', 'd-5', 'd-6'],
   };
+  // Author-set cover URLs, read once from the window templates so a folder can
+  // show its authored covers on the desktop before any window is ever opened.
+  const SLOT_SRC = (() => {
+    const map = {};
+    document.querySelectorAll('template').forEach(t => {
+      t.content.querySelectorAll('image-slot[id][src]').forEach(s => { map[s.id] = s.getAttribute('src'); });
+    });
+    return map;
+  })();
+  // Filled covers for a folder, front-to-back in slot order. A user drop (data
+  // URL in the store) wins; otherwise the slot's authored src is used. Empty
+  // slots are skipped, so the first slot that HAS a cover becomes the front
+  // card on the desktop folder.
   function folderImages(ids) {
     const out = [];
     const get = window.ImageSlots && window.ImageSlots.get;
-    if (!get) return out;
     ids.forEach(id => {
-      const v = get(id);
-      if (v && v.u && /^data:image\//i.test(v.u)) out.push(v.u);
+      const v = get && get(id);
+      const dropped = (v && v.u && /^data:image\//i.test(v.u)) ? v.u : null;
+      const url = dropped || SLOT_SRC[id] || null;
+      if (url) out.push(url);
     });
     return out;
   }
@@ -469,12 +567,66 @@
     updateAllFolders();
   }
 
-  /* ---------- keep things on-screen on resize ---------- */
-  window.addEventListener('resize', () => {
-    $$('.icon').forEach(ic => {
-      const b = iconBounds(ic);
-      ic.style.left = clamp(parseFloat(ic.style.left) || 0, b.minX, b.maxX) + 'px';
-      ic.style.top = clamp(parseFloat(ic.style.top) || 0, b.minY, b.maxY) + 'px';
+  /* ---------- "hello" welcome veil ---------- */
+  // Hand-draws the script word via stroke-dashoffset, holds, fades the word,
+  // then splits the glass panes apart to uncover the desktop. Click skips.
+  (function helloIntro() {
+    const intro = $('#helloIntro');
+    if (!intro) return;
+    const DRAW = 2600, HOLD = 650, FADE = 550, SPLIT = 1000;
+    const timers = [];
+    let phase = 0;
+    const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+    const fadeWord = () => { phase = 1; intro.classList.add('hi-fade'); };
+    const split = () => { phase = 2; intro.classList.add('hi-split'); };
+    const done = () => { phase = 3; timers.forEach(clearTimeout); intro.classList.add('hi-done'); };
+    // Safety net: no matter what, never let the veil trap the desktop.
+    const safety = setTimeout(done, DRAW + HOLD + FADE + SPLIT + 2500);
+    try {
+      const inks = $$('.hi-ink', intro); // one path per letter, writing order
+      if (reduceMotion || !inks.length) {
+        // skip the write-on — letters are fully drawn (word shown), then fade
+        later(() => intro.classList.add('hi-out'), 1100);
+        later(done, 2000);
+      } else {
+        // Draw each letter in turn: the next starts as the previous finishes, so
+        // the pen sweeps across the word h→e→l→l→o — a true sequential write-on.
+        const lens = inks.map((p) => p.getTotalLength());
+        const total = lens.reduce((a, b) => a + b, 0) || 1;
+        let acc = 0;
+        const plan = inks.map((p, idx) => {
+          const dur = DRAW * lens[idx] / total, delay = acc; acc += dur;
+          p.style.strokeDasharray = lens[idx];
+          p.style.strokeDashoffset = lens[idx];
+          return { p, dur, delay };
+        });
+        intro.getBoundingClientRect(); // commit the start state before transitioning
+        requestAnimationFrame(() => {
+          plan.forEach(({ p, dur, delay }) => {
+            p.style.transition = 'stroke-dashoffset ' + dur + 'ms linear ' + delay + 'ms';
+            p.style.strokeDashoffset = '0';
+          });
+        });
+        later(fadeWord, DRAW + HOLD);
+        later(split, DRAW + HOLD + FADE);
+        later(() => { done(); clearTimeout(safety); }, DRAW + HOLD + FADE + SPLIT + 80);
+      }
+    } catch (e) { done(); clearTimeout(safety); }
+    intro.addEventListener('pointerdown', () => {
+      if (phase >= 2) { done(); return; }
+      timers.forEach(clearTimeout);
+      fadeWord(); split();
+      later(done, SPLIT + 60);
     });
-  });
+  })();
+
+  /* ---------- macOS desktop: icons stay put on resize ----------
+     Icons are placed once on load (layoutIcon) and only move when dragged, so
+     resizing the window never shuffles them. The wallpaper is a CSS `cover`
+     background, so it keeps filling the whole screen on its own. */
+
+  /* ---------- About opens by default ---------- */
+  // The bio + "how I think" notes now live inside About, so it greets the
+  // visitor already open (behind the hello veil, revealed when it splits).
+  openWindow('about');
 })();

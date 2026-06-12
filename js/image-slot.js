@@ -50,6 +50,21 @@
 
 (() => {
   const STATE_FILE = '.image-slots.state.json';
+  // Browser-local fallback store. When the omelette host (which writes the
+  // sidecar) isn't present — a plain file:// open or a static deploy — drops
+  // still persist here so the author can fill/replace covers and have them
+  // stick across reloads in their own browser.
+  const LS_KEY = 'tk.image-slots.v1';
+  function lsRead() {
+    try { const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); return v && typeof v === 'object' ? v : null; } catch { return null; }
+  }
+  function lsWrite(obj) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); return true; } catch { return false; }
+  }
+  function canPersist() {
+    if (window.omelette && window.omelette.writeFile) return true;
+    try { localStorage.setItem('__imgslot_probe__', '1'); localStorage.removeItem('__imgslot_probe__'); return true; } catch { return false; }
+  }
   // 2× a ~600px slot in a 1920-wide deck — retina-sharp without making the
   // sidecar enormous. A 1200px WebP at q=0.85 is ~150-300KB.
   const MAX_DIM = 1200;
@@ -77,25 +92,26 @@
     if (loadP) return loadP;
     loadP = fetch(STATE_FILE)
       .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null) // file:// or no sidecar — fall through to localStorage
       .then((j) => {
-        // Merge: sidecar loses to any in-memory change that raced ahead of
-        // the fetch (drop or clear) so neither is clobbered by hydration.
-        if (j && typeof j === 'object') {
-          const merged = Object.assign({}, j, slots);
-          // A framing-only write that raced ahead of hydration must not
-          // drop a user image that's only on disk — inherit u from the
-          // sidecar for any in-memory entry that lacks one.
-          for (const k in slots) {
-            if (merged[k] && !merged[k].u && j[k]) {
-              merged[k].u = typeof j[k] === 'string' ? j[k] : j[k].u;
-            }
+        // Author baseline = committed sidecar; the browser-local store is
+        // overlaid on top so the author's own later edits win. Either may be
+        // absent. In-memory changes that raced ahead of this (drop/clear)
+        // still win over both so hydration never clobbers them.
+        const base = Object.assign({}, (j && typeof j === 'object') ? j : null, lsRead());
+        const merged = Object.assign({}, base, slots);
+        // A framing-only write that raced ahead of hydration must not drop a
+        // user image that's only in the store — inherit u from the baseline
+        // for any in-memory entry that lacks one.
+        for (const k in slots) {
+          if (merged[k] && !merged[k].u && base[k]) {
+            merged[k].u = typeof base[k] === 'string' ? base[k] : base[k].u;
           }
-          for (const id of tombstones) delete merged[id];
-          slots = merged;
         }
+        for (const id of tombstones) delete merged[id];
+        slots = merged;
         tombstones.clear();
       })
-      .catch(() => {})
       .then(() => { loaded = true; subs.forEach((fn) => fn()); });
     return loadP;
   }
@@ -109,11 +125,17 @@
   function save() {
     if (saving) { saveDirty = true; return; }
     const w = window.omelette && window.omelette.writeFile;
-    if (!w) return;
+    const done = () => { saving = false; if (saveDirty) { saveDirty = false; save(); } };
     saving = true;
-    Promise.resolve(w(STATE_FILE, JSON.stringify(slots)))
-      .catch(() => {})
-      .then(() => { saving = false; if (saveDirty) { saveDirty = false; save(); } });
+    if (w) {
+      // Inside the omelette host: write the sidecar so the fill shows on share
+      // links, downloaded zips, and PPTX export.
+      Promise.resolve(w(STATE_FILE, JSON.stringify(slots))).catch(() => {}).then(done);
+    } else {
+      // Static deploy / file:// — persist to the author's browser instead.
+      lsWrite(slots);
+      done();
+    }
   }
 
   const S_MAX = 5;
@@ -267,9 +289,14 @@
       this._subFn = () => this._render();
       // Shadow-DOM listeners live with the shadow DOM — bound once here so
       // disconnect/reconnect (e.g. React remount) doesn't stack handlers.
-      this._empty.addEventListener('click', () => this._input.click());
+      // stopPropagation so adding an image to an empty cover doesn't also
+      // trigger an ancestor card's click (e.g. opening a case study).
+      this._empty.addEventListener('click', (e) => { e.stopPropagation(); this._input.click(); });
       root.addEventListener('click', (e) => {
         const act = e.target && e.target.getAttribute && e.target.getAttribute('data-act');
+        // Replace/Remove manage the image in place — keep the click from
+        // bubbling to an ancestor card so it doesn't open a nested window.
+        if (act) e.stopPropagation();
         if (act === 'replace') { this._exitReframe(true); this._input.click(); }
         if (act === 'clear') {
           this._exitReframe(false);
@@ -592,8 +619,10 @@
       this._ring.style.borderRadius = mask ? '' : radius;
       this._ring.style.display = mask ? 'none' : '';
 
-      // Controls and reframe entry gate on this so share links stay read-only.
-      const editable = !!(window.omelette && window.omelette.writeFile);
+      // Controls and reframe entry gate on this. Editable when the fill can be
+      // persisted — either the omelette host (writes the sidecar) or, on a
+      // static deploy, the author's own browser via localStorage.
+      const editable = canPersist();
       this.toggleAttribute('data-editable', editable);
       this._sub.style.display = editable ? '' : 'none';
 
