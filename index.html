@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <style>
 :root{
   /* ---- Studio (default) : warm porcelain + aurora ---- */
@@ -74,7 +76,9 @@ html,body{height:100%;overflow:hidden}
 body{
   font-family:'Instrument Sans',system-ui,sans-serif;
   color:var(--ink);
-  background:url('./uploads/bg.jpg') center top/cover fixed,linear-gradient(165deg,var(--wall-1),var(--wall-2));
+  /* center/cover keeps the subject framed and scales proportionally as the
+     window shrinks; no `fixed` — it fails to paint inside embedded previews */
+  background:url('./uploads/bg.jpg?v=3') center center/cover no-repeat,linear-gradient(165deg,var(--wall-1),var(--wall-2));
   -webkit-font-smoothing:antialiased;
   user-select:none;
   transition:color .4s var(--ease);
@@ -109,38 +113,42 @@ body{
   pointer-events:none;
   isolation:isolate;
   background:transparent;
-  backdrop-filter:blur(28px) saturate(180%);
-  -webkit-backdrop-filter:blur(28px) saturate(180%);
-  box-shadow:
-    inset 0 -1px 0 color-mix(in oklab,var(--glass-brd) 50%,transparent),
-    0 2px 24px -10px var(--glass-shadow);
   border-radius:0;
 }
-/* top sheen from the screen frame */
-.menubar::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:linear-gradient(180deg,color-mix(in oklab,#fff 8%,transparent),transparent 55%)}
-/* subtle bottom-edge glow */
-.menubar::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  box-shadow:inset 0 1px 0 color-mix(in oklab,#fff 55%,transparent)}
+/* Liquid glass: a light refractive blur that MELTS into the wallpaper toward
+   the bottom edge — heaviest at the very top, fully transparent by the lip —
+   so the bar reads as clear glass, never a white slab. Lives on ::before so
+   the mask fades only the glass, not the text. */
+.menubar::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+  backdrop-filter:blur(14px) saturate(135%);-webkit-backdrop-filter:blur(14px) saturate(135%);
+  -webkit-mask:linear-gradient(to bottom,#000 0%,#000 64%,transparent 100%);
+          mask:linear-gradient(to bottom,#000 0%,#000 64%,transparent 100%)}
+/* the liquid-glass lip: a bright refractive hairline riding the bottom edge */
+.menubar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;z-index:-1;
+  background:linear-gradient(to right,transparent 3%,var(--glass-rim) 22%,var(--glass-rim) 78%,transparent 97%);
+  opacity:.65;box-shadow:0 1px 7px -2px color-mix(in oklab,var(--glass-rim) 60%,transparent)}
+/* menu bar: red brand, white role + clock (macOS style), no text shadow */
 .mb-pill{
   pointer-events:auto;display:flex;align-items:center;gap:13px;
-  color:var(--menu-ink);
+  color:#fff;
 }
 .mb-left{font-size:13px}
-.mb-mark{display:flex;align-items:center;font-weight:500;font-size:14px;letter-spacing:.32em;
+.mb-mark{display:flex;align-items:center;font-weight:600;font-size:14px;letter-spacing:.32em;
   text-transform:uppercase;color:var(--accent);white-space:nowrap}
-.mb-sep{width:1px;height:16px;background:var(--edge);opacity:.7;flex:0 0 auto}
-.mb-status{font-size:12px;letter-spacing:.01em;color:var(--ink-soft);white-space:nowrap}
+.mb-sep{width:1px;height:16px;background:rgba(255,255,255,.45);flex:0 0 auto}
+.mb-status{font-size:13px;letter-spacing:.01em;color:#fff;white-space:nowrap;font-weight:600;
+  text-shadow:0 1px 4px rgba(0,0,0,.18)}
 .mb-right{gap:7px}
 .mb-link{
   display:flex;align-items:center;justify-content:center;
   width:32px;height:32px;border-radius:9px;
-  color:var(--menu-ink);text-decoration:none;
+  color:#fff;text-decoration:none;
   border:1px solid transparent;transition:background .2s,transform .2s var(--ease-back);
 }
-.mb-link:hover{background:color-mix(in oklab,var(--ink) 10%,transparent);transform:translateY(-1px)}
+.mb-link:hover{background:rgba(255,255,255,.18);transform:translateY(-1px)}
 .mb-link svg{width:16px;height:16px;flex:0 0 auto}
-.mb-clock{font-size:12px;letter-spacing:.04em;color:var(--ink-soft);min-width:64px;text-align:right}
+.mb-clock{font-size:13px;letter-spacing:.04em;color:#fff;min-width:64px;text-align:right;font-weight:600;
+  text-shadow:0 1px 4px rgba(0,0,0,.18)}
 .theme-sw{display:flex;gap:6px;align-items:center;padding-left:5px}
 .theme-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid var(--edge);
   transition:transform .2s var(--ease-back),border-color .2s}
@@ -180,19 +188,21 @@ body{
 .icon.sel .label{background:color-mix(in oklab,var(--accent) 90%,transparent);color:var(--on-accent);text-shadow:none}
 
 /* ---- squircle desktop icons (folders + single apps) ---- */
-.folder,.single{width:138px;gap:12px}
-.folder .art,.single .art{width:116px;height:116px;position:relative;transform:none;
+.folder,.single{width:112px;gap:9px}
+.folder .art,.single .art{width:92px;height:92px;position:relative;transform:none;
   transform-style:flat;transition:transform .2s var(--snap)}
 .folder .label,.single .label{
-  font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--ink);
+  font-size:16px;font-weight:600;letter-spacing:-.012em;color:#fff;
   text-align:center;line-height:1.18;white-space:nowrap;padding:0;
-  text-shadow:0 1px 1px color-mix(in oklab,var(--wall-1) 55%,transparent);
+  /* white macOS-style label: a layered dark halo keeps it legible over both
+     the bright sky and any pale area of the wallpaper */
+  text-shadow:0 1px 3px rgba(0,0,0,.5),0 1px 10px rgba(0,0,0,.35),0 0 1px rgba(0,0,0,.55);
 }
 .folder .label.wrap,.single .label.wrap{white-space:normal;max-width:150px}
 .icon .count{
-  font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.92);text-align:center;
   margin-top:-7px;line-height:1.2;
-  text-shadow:0 1px 1px color-mix(in oklab,var(--wall-1) 50%,transparent);
+  text-shadow:0 1px 3px rgba(0,0,0,.5),0 1px 8px rgba(0,0,0,.3);
 }
 .icon .count.accent{color:var(--accent);font-weight:600}
 /* running (open) indicator */
@@ -203,9 +213,8 @@ body{
 
 /* shared squircle card */
 .fcard,.scard{
-  position:absolute;inset:0;border-radius:31px;overflow:hidden;background:var(--panel);
-  border:1px solid var(--glass-brd);
-  box-shadow:0 18px 32px -16px var(--glass-shadow),0 4px 9px -6px var(--glass-shadow),inset 0 1px 0 var(--glass-rim);
+  position:absolute;inset:0;border-radius:25px;overflow:hidden;background:var(--panel);
+  box-shadow:0 16px 28px -16px var(--glass-shadow),0 4px 9px -6px var(--glass-shadow);
   transition:transform .2s var(--snap),box-shadow .18s var(--ease);
   will-change:transform;backface-visibility:hidden;
 }
@@ -221,9 +230,9 @@ body{
 .folder .fc-front{z-index:3}
 .folder .fc-b1{z-index:2;transform:translate(9px,-7px) rotate(5deg) scale(.965)}
 .folder .fc-b2{z-index:1;transform:translate(17px,-13px) rotate(10deg) scale(.93)}
-.folder:hover .fc-front{transform:translateY(-7px) scale(1.025)}
-.folder:hover .fc-b1{transform:translate(25px,-9px) rotate(9.5deg) scale(.965)}
-.folder:hover .fc-b2{transform:translate(45px,-17px) rotate(17deg) scale(.93)}
+.folder:hover .fc-front{transform:translateY(-6px) scale(1.02)}
+.folder:hover .fc-b1{transform:translate(14px,-8px) rotate(7deg) scale(.965)}
+.folder:hover .fc-b2{transform:translate(26px,-13px) rotate(12deg) scale(.93)}
 .folder:active .art{transform:scale(.97)}
 
 /* single app squircle */
@@ -304,7 +313,9 @@ body{
 /* ---------------- windows ---------------- */
 .win{
   position:fixed;z-index:1000;display:flex;flex-direction:column;
-  background:color-mix(in oklab,var(--panel) 34%,transparent);
+  /* a touch more opaque than before so body text (incl. the AAA description)
+     always has a light backing, while staying glassy */
+  background:color-mix(in oklab,var(--panel) 56%,transparent);
   backdrop-filter:blur(40px) saturate(190%);-webkit-backdrop-filter:blur(40px) saturate(190%);
   border:1px solid var(--glass-brd);
   border-radius:18px;overflow:hidden;
@@ -328,11 +339,22 @@ body{
 .lights{display:flex;gap:8px;align-items:center}
 .lights span{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.08);
   display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1;color:rgba(0,0,0,.45);font-weight:700}
-.lights .c{background:#ec6a5e;cursor:pointer}
+.lights span{cursor:default}
+.lights .c{background:#ec6a5e}
 .lights .y{background:#f3bf4f}.lights .g{background:#61c454}
 .lights:hover .c::before{content:"\00d7"}
 .lights:hover .y::before{content:"\2013"}
 .lights:hover .g::before{content:"\2197"}
+/* drag-to-resize handles (edges + corners) */
+.win .rz{position:absolute;z-index:5;touch-action:none}
+.win .rz-e{top:10px;bottom:10px;right:-3px;width:9px;cursor:ew-resize}
+.win .rz-w{top:10px;bottom:10px;left:-3px;width:9px;cursor:ew-resize}
+.win .rz-s{left:10px;right:10px;bottom:-3px;height:9px;cursor:ns-resize}
+.win .rz-n{left:10px;right:10px;top:-3px;height:9px;cursor:ns-resize}
+.win .rz-se{right:-3px;bottom:-3px;width:16px;height:16px;cursor:nwse-resize}
+.win .rz-sw{left:-3px;bottom:-3px;width:16px;height:16px;cursor:nesw-resize}
+.win .rz-ne{right:-3px;top:-3px;width:16px;height:16px;cursor:nesw-resize}
+.win .rz-nw{left:-3px;top:-3px;width:16px;height:16px;cursor:nwse-resize}
 .win .bar .wt{font-size:13px;font-weight:600;color:var(--ink)}
 .win .bar .wt .path{color:var(--ink-faint);font-weight:500}
 .win .body{flex:1;overflow-y:auto;overflow-x:hidden;background:transparent}
@@ -344,7 +366,8 @@ body{
 .wlead{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
 .wkicker{font-family:'Instrument Sans';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
 .wtitle{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.04}
-.wsub{font-size:15px;color:var(--ink-soft);line-height:1.5;max-width:60ch}
+/* WCAG AAA: near-black on the light frosted glass clears 7:1 comfortably */
+.wsub{font-size:15px;color:#222426;line-height:1.5;max-width:60ch;font-weight:450}
 
 .meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
 .chip{font-family:'Instrument Sans';font-size:11px;color:var(--ink-soft);border:1px solid var(--edge);border-radius:999px;padding:5px 11px;letter-spacing:.02em}
@@ -371,10 +394,10 @@ body{
   transition:transform .22s cubic-bezier(.2,.85,.3,1)}
 /* the shadow lives behind the cover and shifts with the tilt (--shx/--shy) */
 .thumb-deck::before{content:"";position:absolute;inset:0;border-radius:18px;z-index:0;
-  background:radial-gradient(120% 120% at 50% 50%,rgba(40,28,18,.55),rgba(40,28,18,.32) 55%,transparent 78%);
-  filter:blur(20px);opacity:0;transform:translate(0,10px) scale(.9);
+  background:radial-gradient(125% 125% at 50% 50%,rgba(36,34,44,.30),rgba(36,34,44,.15) 56%,transparent 80%);
+  filter:blur(26px);opacity:0;transform:translate(0,10px) scale(.9);
   transition:opacity .22s var(--ease),transform .22s cubic-bezier(.2,.85,.3,1)}
-.proj-card:hover .thumb-deck::before{opacity:.6;
+.proj-card:hover .thumb-deck::before{opacity:.45;
   transform:translate(var(--shx,0px),var(--shy,24px)) scale(.96)}
 .thumb-deck .front{position:absolute;inset:0;width:100%;height:100%;display:block;
   border-radius:14px;overflow:hidden;z-index:5;box-shadow:0 14px 30px -18px var(--shadow)}
@@ -494,7 +517,8 @@ body{
 .sig .sig-msg{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-top:6px}
 .sig .sig-date{font-family:'Instrument Sans';font-size:10px;color:var(--ink-faint);margin-top:7px;letter-spacing:.04em}
 
-/* resume window */
+/* resume window — the PDF fills the whole window body, like Preview */
+.res-pdf{width:100%;height:100%;border:0;display:block;background:#525659}
 .res-wrap{padding:26px 30px 30px}
 .res-actions{display:flex;gap:10px;margin-top:18px}
 .res-btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:11px;
@@ -511,15 +535,21 @@ body{
 
 /* about window */
 .about-wrap{padding:0}
-.about-hero{position:relative;padding:0;display:block;
-  background:linear-gradient(150deg,color-mix(in oklab,var(--accent) 13%,var(--panel)),var(--panel));
+/* avatar sits to the LEFT of the name/role blurb */
+.about-head{display:flex;align-items:center;gap:18px;padding:26px 30px 22px;
+  background:linear-gradient(150deg,color-mix(in oklab,var(--accent) 12%,var(--panel)),var(--panel));
   border-bottom:1px solid var(--edge-soft)}
-.about-portrait{width:100%;aspect-ratio:1/1;overflow:hidden;border-bottom:1px solid var(--edge-soft)}
-.about-portrait image-slot{width:100%;height:100%;display:block}
-.about-intro{padding:24px 32px 24px}
+.about-avatar{flex:0 0 100px;width:100px;height:100px;border-radius:20px;overflow:hidden;
+  border:1px solid var(--edge-soft);box-shadow:0 8px 18px -10px var(--shadow)}
+.about-avatar image-slot{width:100px;height:100px;display:block}
+.about-intro{min-width:0}
 .about-intro .hi{font-family:'Instrument Sans';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
-.about-intro h2{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.02;margin:4px 0 8px}
-.about-intro p{font-size:14.5px;color:var(--ink-soft);line-height:1.55;max-width:46ch}
+.about-intro h2{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.04;margin:3px 0 6px}
+.about-intro p{font-size:14px;color:var(--ink);line-height:1.5;max-width:44ch}
+.about-notes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.about-note{border:1px solid var(--edge-soft);border-radius:14px;padding:15px 16px;background:var(--panel-2)}
+.about-note h4{font-size:14.5px;font-weight:700;margin-bottom:6px}
+.about-note p{font-size:13px;color:var(--ink);line-height:1.5}
 .about-body{padding:24px 32px 30px}
 .about-thesis{font-size:19px;font-weight:600;line-height:1.5;letter-spacing:-.01em}
 .about-thesis b{color:var(--accent);font-weight:700}
@@ -528,6 +558,39 @@ body{
 .about-facts .fv{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.02em;line-height:1}
 .about-facts .fl{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.35}
 .about-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+
+/* ---------------- "hello" welcome veil ---------------- */
+/* One whole frosted sheet covers the desktop while "hello" hand-draws itself;
+   the word fades, then the sheet opens down the middle to reveal the desktop. */
+#helloIntro{position:fixed;inset:0;z-index:9000;cursor:default}
+#helloIntro.hi-done{display:none}
+/* the single seamless cover shown during the writing phase */
+.hi-pane{position:absolute;inset:0;
+  background:color-mix(in oklab,#fff 13%,transparent);
+  backdrop-filter:blur(46px) saturate(172%);-webkit-backdrop-filter:blur(46px) saturate(172%)}
+#helloIntro.hi-split .hi-pane{opacity:0;transition:opacity 0s}
+/* two matching halves take over only to perform the split — identical glass,
+   so there's no visible seam until they actually part */
+.hi-half{position:absolute;top:0;bottom:0;width:50%;opacity:0;
+  background:color-mix(in oklab,#fff 13%,transparent);
+  backdrop-filter:blur(46px) saturate(172%);-webkit-backdrop-filter:blur(46px) saturate(172%);
+  transition:transform 1000ms cubic-bezier(.72,0,.16,1)}
+.hi-left{left:0}
+.hi-right{right:0}
+#helloIntro.hi-split .hi-half{opacity:1}
+#helloIntro.hi-split .hi-left{transform:translateX(-101%)}
+#helloIntro.hi-split .hi-right{transform:translateX(101%)}
+/* The exact handwriting (white strokes + fills, no glow). A hidden centerline
+   "pen" path (.hi-guide) traces the writing motion and, used as a mask, reveals
+   the letters as the pen passes — a true write-on, not a fade. A subtle dark
+   shadow keeps the white legible over the bright frosted glass. */
+.hi-word{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(560px,72vw);filter:drop-shadow(0 1px 3px rgba(0,0,0,.28));
+  transition:opacity .55s var(--ease)}
+.hi-ink{will-change:stroke-dashoffset}
+#helloIntro.hi-fade .hi-word{opacity:0}
+/* reduced motion: no drawing, no panes flying — the whole veil just fades */
+#helloIntro.hi-out{opacity:0;transition:opacity .9s ease}
 
 @media (max-width:880px){
   .hint{display:none}
@@ -546,7 +609,6 @@ body{
 <div class="menubar">
   <div class="mb-pill mb-left">
     <span class="mb-mark">Theresa Kong</span>
-    <span class="mb-sep"></span>
     <span class="mb-status mono">Senior Product Designer</span>
   </div>
   <div class="mb-pill mb-right">
@@ -556,33 +618,39 @@ body{
     <a class="mb-link" href="mailto:hello@theresakong.com" aria-label="Email" title="Email">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
     </a>
-    <span class="mb-sep"></span>
     <span class="mb-clock mono" id="clock">—</span>
   </div>
+</div>
+
+<!-- ===== "hello" welcome veil ===== -->
+<div id="helloIntro" aria-hidden="true">
+  <div class="hi-pane"></div>
+  <div class="hi-half hi-left"></div>
+  <div class="hi-half hi-right"></div>
+  <!-- "hello" as one continuous pen stroke, drawn in writing order via
+       stroke-dashoffset. o / l / l are Theresa's exact centerlines; h and e are
+       traced as matching strokes (her originals were filled outlines, which a
+       dash-draw can't trace). Pen-lifts between letters are separate subpaths. -->
+  <svg class="hi-word" viewBox="-20 -20 1480 700" aria-label="hello"
+       fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <!-- one path per letter, in writing order, each drawn after the last.
+         e / l / l / o are Theresa's exact strokes; h is traced (her h is a
+         filled outline). The o is reversed so it draws counter-clockwise. -->
+    <path class="hi-ink" d="M20 14C30 180 42 460 57 628C95 470 200 272 250 272C300 272 324 470 326 598"/>
+    <path class="hi-ink" d="M411.002 435.83C496.002 476.33 698.002 316.002 614.502 259.501C560.266 222.803 491.262 336.002 479.002 435.83C470.514 504.941 474.547 586.981 541.502 602.329C629.502 622.502 727.502 530.83 762.002 467.33"/>
+    <path class="hi-ink" d="M853.002 77.0016C853.002 77.0016 839.501 458.002 853.001 602.502"/>
+    <path class="hi-ink" d="M1026 89.5016C1017 251.502 1011.5 605.502 1011.5 605.502"/>
+    <path class="hi-ink" d="M1214.5 306.502C1214.5 306.502 1137.71 533.253 1218 582.002C1316 641.502 1501.5 321.002 1360.5 243.502C1317.12 219.658 1222.5 283.502 1155 410.002"/>
+  </svg>
 </div>
 
 <!-- ===== desktop ===== -->
 <div class="layer" id="iconLayer">
 
-  <!-- sticky: bio -->
-  <div class="icon sticky yellow" id="sticky-bio" style="left:48px;top:96px" data-noopen>
-    <div class="pad">
-      <span class="pin"></span>
-      <h3>Hi, I'm Theresa.</h3>
-      <p>A product designer with 6+ years turning tangled, multi-sided problems into clear, humane systems — most recently 0→1 work at TourHero.</p>
-    </div>
-  </div>
-
-  <!-- sticky: ethos -->
-  <div class="icon sticky paper" id="sticky-ethos" style="left:104px;top:352px" data-noopen>
-    <div class="pad">
-      <h3>How I think</h3>
-      <p>Map the flow first. Make the invisible logic visible. Break big ideas into small, surprising pieces people instantly get.</p>
-    </div>
-  </div>
+  <!-- bio + "how I think" now live inside the About window, which opens on load -->
 
   <!-- folders -->
-  <div class="icon folder" id="ic-work" data-open="work" data-screen-label="Work" style="left:1100px;top:72px">
+  <div class="icon folder" id="ic-work" data-open="work" data-screen-label="Work" style="left:1040px;top:72px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#c9d8ec,#9fbbdd)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f1bca9,#dd8e76)"><i class="ph"></i></span>
@@ -592,7 +660,7 @@ body{
     <div class="count">5 items</div>
   </div>
 
-  <div class="icon folder" id="ic-photo" data-open="photo" data-screen-label="Photography" style="left:1270px;top:72px">
+  <div class="icon folder" id="ic-photo" data-open="photo" data-screen-label="Photography" style="left:1240px;top:72px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#d0d4dc,#9aa1ad)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#e9cdae,#c59b71)"><i class="ph"></i></span>
@@ -602,7 +670,7 @@ body{
     <div class="count">12 items</div>
   </div>
 
-  <div class="icon folder" id="ic-dotb" data-open="dotb" data-screen-label="Do Outside the Box" style="left:1100px;top:236px">
+  <div class="icon folder" id="ic-dotb" data-open="dotb" data-screen-label="Do Outside the Box" style="left:1040px;top:292px">
     <div class="art">
       <span class="fcard fc-b2 tint" style="--tint:linear-gradient(150deg,#bfe3c9,#8cc89e)"><i class="ph"></i></span>
       <span class="fcard fc-b1 tint" style="--tint:linear-gradient(150deg,#f6d79a,#e9aa4d)"><i class="ph"></i></span>
@@ -613,25 +681,14 @@ body{
   </div>
 
   <!-- apps -->
-  <div class="icon single" id="ic-about" data-open="about" data-screen-label="About" style="left:96px;top:612px">
+  <div class="icon single" id="ic-about" data-open="about" data-screen-label="About" style="left:96px;top:96px">
     <div class="art"><span class="scard portrait"><i class="ph"></i></span></div>
     <div class="label">About</div>
     <div class="count">Theresa Kong</div>
   </div>
 
-  <div class="icon single" id="ic-gb" data-open="guestbook" data-screen-label="Guest Book" style="left:1270px;top:236px">
-    <div class="art"><span class="scard guest">
-      <svg viewBox="0 0 60 60" width="56" height="56" fill="none">
-        <path d="M15 12.5C15 11 16.2 10 17.6 10H43.4C44.8 10 46 11 46 12.5V47.5C46 49 44.8 50 43.4 50H17.6C16.2 50 15 49 15 47.5Z" stroke="#fff" stroke-width="3"/>
-        <path d="M22 22H39M22 30H39M22 38H32" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M38 38.5L43 33.5L46.5 37L41.5 42H38Z" fill="#fff"/>
-      </svg>
-    </span></div>
-    <div class="label">Guest Book</div>
-    <div class="count accent">Leave your color</div>
-  </div>
 
-  <div class="icon single" id="ic-res" data-open="resume" data-screen-label="Résumé" style="left:1185px;top:400px">
+  <div class="icon single" id="ic-res" data-open="resume" data-screen-label="Résumé" style="left:1140px;top:512px">
     <div class="art"><span class="scard paper">
       <svg viewBox="0 0 60 60" width="54" height="54" fill="none">
         <path d="M18 9H35L45 19V49C45 50.7 43.7 52 42 52H18C16.3 52 15 50.7 15 49V12C15 10.3 16.3 9 18 9Z" stroke="#c0564f" stroke-width="3"/>
@@ -655,8 +712,8 @@ body{
 
 <template id="tmpl-about">
   <div class="about-wrap">
-    <div class="about-hero">
-      <div class="about-portrait"><image-slot id="about-photo" placeholder="Drop a portrait"></image-slot></div>
+    <div class="about-head">
+      <div class="about-avatar"><image-slot id="about-photo" shape="rect" placeholder="Photo"></image-slot></div>
       <div class="about-intro">
         <span class="hi mono">Hello · New York, NY</span>
         <h2>Theresa Kong</h2>
@@ -665,6 +722,10 @@ body{
     </div>
     <div class="about-body">
       <p class="about-thesis">I take tangled, multi-sided problems and make their logic <b>visible</b> — mapping the flow first, then breaking big ideas into small, surprising pieces people <b>instantly get</b>.</p>
+      <div class="about-notes">
+        <div class="about-note"><h4>Hi, I'm Theresa</h4><p>A product designer with 6+ years turning tangled, multi-sided problems into clear, humane systems — most recently 0→1 work at TourHero.</p></div>
+        <div class="about-note"><h4>How I think</h4><p>Map the flow first. Make the invisible logic visible. Break big ideas into small, surprising pieces people instantly get.</p></div>
+      </div>
       <div class="about-facts">
         <div class="f"><div class="fv">6+ yrs</div><div class="fl">designing 0→1 products &amp; systems</div></div>
         <div class="f"><div class="fv">3-sided</div><div class="fl">marketplace architecture at TourHero</div></div>
@@ -691,18 +752,18 @@ body{
           <image-slot class="front" id="th-tourhero" radius="14" placeholder="Cover"></image-slot>
         </div></div>
         <div class="proj-meta">
-          <div class="pc-top"><h4>TourHero <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
+          <div class="pc-top"><h4>TourHero: Plan a trip <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
           <div class="proj-tags">
-            <span class="tag">3-sided marketplace</span>
-            <span class="tag">0→1 architecture</span>
-            <span class="tag">AI-assisted planning</span>
-            <span class="tag">Design systems</span>
+            <span class="tag">Form-to-Assistant Automation</span>
+            <span class="tag">Intent-Driven Logic Architecture</span>
+            <span class="tag">Dynamic Flow &amp; Exception Handling</span>
+            <span class="tag">Automated Generation Framework</span>
           </div>
         </div>
       </div>
       <div class="proj-card" data-open="proj-errunds">
         <div class="proj-thumb"><div class="thumb-deck">
-          <image-slot class="front" id="th-errunds" radius="14" placeholder="Cover" src="./uploads/errunds-cover-phones-altogether.svg"></image-slot>
+          <image-slot class="front" id="th-errunds" radius="14" placeholder="Cover" src="./uploads/Errunds/intro-banner-2026.png"></image-slot>
         </div></div>
         <div class="proj-meta">
           <div class="pc-top"><h4>Errunds <svg class="draw-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M7 17 L17 7"></path><path pathLength="1" d="M9 7 H17 V15"></path></svg></h4></div>
@@ -747,11 +808,11 @@ body{
 
 <template id="tmpl-proj-tourhero">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-tourhero" placeholder="Drop a TourHero hero image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-tourhero" shape="rect" placeholder="Drop a TourHero hero image"></image-slot></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · 0→1 Marketplace</span>
-      <h2 class="wtitle">TourHero</h2>
+      <h2 class="wtitle">TourHero: Plan a trip</h2>
       <p class="wsub">A three-sided travel marketplace where travelers find trips, local "TourHeroes" lead them, and operators run them. I directed the end-to-end design architecture connecting all three.</p>
     </div>
     <div class="meta-row">
@@ -794,7 +855,7 @@ body{
 
 <template id="tmpl-proj-errunds">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-errunds" placeholder="Drop an Errunds hero image" src="./uploads/cover-phone-1.svg"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-errunds" shape="rect" placeholder="Drop an Errunds hero image" src="./uploads/Errunds/intro-banner-insidecasestudy.png"></image-slot></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · Discovery & IA</span>
@@ -841,7 +902,7 @@ body{
 
 <template id="tmpl-proj-figma">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-figma" placeholder="Drop a cover image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-figma" shape="rect" placeholder="Drop a cover image"></image-slot></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Case · Tool · Maker</span>
@@ -859,7 +920,7 @@ body{
 
 <template id="tmpl-proj-3dme">
   <div class="case-topbar"><button class="case-back" data-back><span class="ar">←</span> Back to Work</button></div>
-  <div class="case-hero"><image-slot id="hero-3dme" placeholder="Drop a cover image"></image-slot></div>
+  <div class="case-hero"><image-slot id="hero-3dme" shape="rect" placeholder="Drop a cover image"></image-slot></div>
   <div class="pad-l">
     <div class="wlead">
       <span class="wkicker mono">Concept · 3D · Play</span>
@@ -911,66 +972,12 @@ body{
   </div>
 </template>
 
-<template id="tmpl-guestbook">
-  <div class="gb-wrap">
-    <div class="gb-form">
-      <h3>Sign the book</h3>
-      <p class="gb-int">Every visitor leaves a color. Pick yours, add a note, and you become part of the wall — for the next person who wanders in.</p>
-      <div class="gb-field">
-        <label>Your name</label>
-        <input id="gb-name" type="text" maxlength="28" placeholder="e.g. Alex from Figma" autocomplete="off">
-      </div>
-      <div class="gb-field">
-        <label>A note (optional)</label>
-        <textarea id="gb-msg" rows="3" maxlength="120" placeholder="Say hi, leave a thought…"></textarea>
-      </div>
-      <div class="gb-field">
-        <label>Your color</label>
-        <div class="swatches" id="gb-swatches"></div>
-      </div>
-      <div class="gb-sign">
-        <button class="gb-btn" id="gb-submit">Leave my mark ✶</button>
-      </div>
-    </div>
-    <div class="gb-board">
-      <div class="gb-board-head">
-        <h2 class="wtitle" style="font-size:22px">The wall</h2>
-        <span class="gb-count mono"><b id="gb-n">0</b> marks left</span>
-      </div>
-      <div class="sigs" id="gb-sigs"></div>
-    </div>
-  </div>
-</template>
-
 <template id="tmpl-resume">
-  <div class="res-wrap">
-    <div class="wlead">
-      <span class="wkicker mono">resume.pdf</span>
-      <h2 class="wtitle">Theresa Kong</h2>
-      <p class="wsub">Product Designer · New York, NY · 6+ years across 0→1 marketplaces, AI tools, and consumer apps.</p>
-    </div>
-    <div class="res-actions">
-      <a class="res-btn primary" href="./assets/Theresa_Kong_Resume.pdf" target="_blank" rel="noopener">Open PDF ↗</a>
-      <a class="res-btn" href="./assets/Theresa_Kong_Resume.pdf" download>Download</a>
-      <a class="res-btn" href="mailto:hello@theresakong.com">hello@theresakong.com</a>
-    </div>
-    <div class="res-list">
-      <div class="res-job">
-        <div><h5>Senior Product Designer</h5><div class="rc">TourHero</div></div>
-        <div class="rd mono">Sep 2025 – Mar 2026</div>
-        <p>Directed end-to-end design architecture for a three-sided travel marketplace, embedding AI into the trip-planning experience.</p>
-      </div>
-      <div class="res-job">
-        <div><h5>Product Designer</h5><div class="rc">Earlier work</div></div>
-        <div class="rd mono">2019 – 2025</div>
-        <p>0→1 consumer and marketplace products — research, IA, prototyping, usability testing, and hand-built design systems & iconography.</p>
-      </div>
-    </div>
-    <p class="note-fill mono">This is a summary — the PDF has the full, accurate history. Tell me corrections and I'll match it exactly.</p>
-  </div>
+  <!-- the real PDF, rendered in-window like macOS Preview -->
+  <iframe class="res-pdf" src="./assets/Theresa_Kong_Resume.pdf#view=FitH" title="Theresa Kong — Résumé"></iframe>
 </template>
 
-<script src="./js/image-slot.js"></script>
-<script src="./js/os.js"></script>
+<script src="./js/image-slot.js?v=15"></script>
+<script src="./js/os.js?v=21"></script>
 </body>
 </html>
